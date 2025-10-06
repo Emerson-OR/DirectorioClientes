@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Directorio de Clientes</h1>
+
+  {% if perms.clientes.add_cliente %}
+    <a class="btn btn-primary mb-3" href="{% url 'agregar_cliente' %}">Agregar Cliente</a>
+  {% endif %}
+
+  <div class="row">
+    {% for cliente in clientes %}
+      <div class="col-md-4 mb-3">
+        <div class="card p-2">
+          {% if cliente.logo %}
+            <img src="{{ cliente.logo.url }}" class="card-img-top" style="max-height:140px;object-fit:contain;">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ cliente.nombre }}</h5>
+            <p class="card-text">{{ cliente.compania }}<br>ID: {{ cliente.identificacion }}</p>
+
+            {% if perms.clientes.delete_cliente %}
+              <a href="{% url 'eliminar_cliente' cliente.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>No hay clientes registrados.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

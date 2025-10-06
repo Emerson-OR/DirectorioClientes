@@ -1,0 +1,12 @@
+# Entorno virtual
+Directorio/
+
+# Archivos de Django
+__pycache__/
+*.pyc
+db.sqlite3
+
+# Archivos del sistema
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Directorio{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>Directorio de Clientes</h1>
+        {% if user.is_authenticated %}
+            <p>Hola, {{ user.username }} | <a href="{% url 'logout' %}">Cerrar sesión</a></p>
+        {% else %}
+            <a href="{% url 'login' %}">Iniciar sesión</a>
+        {% endif %}
+        <hr>
+    </header>
+
+    {% block content %}
+    {% endblock %}
+</body>
+</html>
