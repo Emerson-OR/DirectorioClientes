@@ -108,6 +108,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Modelo de usuario personalizado
+AUTH_USER_MODEL = 'clientes.Usuario'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -130,3 +132,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# A dónde ir tras login
+LOGIN_REDIRECT_URL = '/'
+
+# A dónde ir tras logout
+LOGOUT_REDIRECT_URL = 'login'

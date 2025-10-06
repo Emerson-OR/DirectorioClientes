@@ -8,14 +8,15 @@
     <header>
         <h1>Directorio de Clientes</h1>
         {% if user.is_authenticated %}
-            <p>Hola, {{ user.username }} | <a href="{% url 'logout' %}">Cerrar sesión</a></p>
-        {% else %}
-            <a href="{% url 'login' %}">Iniciar sesión</a>
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+                <button type="submit">Cerrar sesión</button>
+            </form>
         {% endif %}
         <hr>
     </header>
 
-    {% block content %}
-    {% endblock %}
+    {% block content %}{% endblock %}
 </body>
 </html>
+
