@@ -4,18 +4,26 @@ from django.contrib.auth.decorators import login_required
 from .models import Cliente, Usuario
 from .forms import ClienteForm, RegistroForm
 from django.http import HttpResponseForbidden
+from django.contrib import messages
 
-# Registro de usuarios
 def registro(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            return redirect('lista_clientes')
+            user = authenticate(username=user.username, password=request.POST['password1'])
+            if user:
+                login(request, user)
+                return redirect('lista_clientes')
+        else:
+            print("❌ Errores del formulario:", form.errors)
     else:
         form = RegistroForm()
+
     return render(request, 'registration/registro.html', {'form': form})
+
+
+
 
 # Login y logout usarían tus vistas genéricas actuales
 
