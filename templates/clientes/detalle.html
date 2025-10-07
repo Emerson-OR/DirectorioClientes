@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg mt-6">
+    <h2 class="text-2xl font-bold mb-4 text-center">{{ cliente.nombre }}</h2>
+
+    {% if cliente.logo %}
+    <div class="flex justify-center mb-4">
+        <img src="{{ cliente.logo.url }}" alt="Logo de {{ cliente.nombre }}" class="w-32 h-32 object-contain">
+    </div>
+    {% endif %}
+
+    <ul class="text-gray-700 space-y-2">
+        <li><strong>Compañía:</strong> {{ cliente.compania }}</li>
+        <li><strong>Identificación:</strong> {{ cliente.identificacion }}</li>
+        <li><strong>Teléfono:</strong> {{ cliente.telefono }}</li>
+        <li><strong>Correo:</strong> {{ cliente.correo }}</li>
+        <li><strong>País:</strong> {{ cliente.pais }}</li>
+        <li><strong>Dirección:</strong> {{ cliente.direccion }}</li>
+        <li><strong>Creado por:</strong> {{ cliente.creado_por }}</li>
+        <li><strong>Fecha de creación:</strong> {{ cliente.creado_en|date:"d/m/Y H:i" }}</li>
+    </ul>
+
+    {% if maps_url %}
+    <div class="mt-4 text-center">
+        <a href="{{ maps_url }}" target="_blank" 
+           class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+           Ver ubicación en Google Maps
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="mt-6 text-center">
+        <a href="{% url 'lista_clientes' %}" 
+           class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+           Volver a la lista
+        </a>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg p-4 rounded-4">
+        <h2 class="text-center mb-4">🧾 Registrar nuevo cliente</h2>
+
+        <form method="POST" enctype="multipart/form-data" class="row g-3">
+            {% csrf_token %}
+            
+            <!-- Nombre -->
+            <div class="col-md-6">
+                <label for="id_nombre" class="form-label">Nombre del Cliente</label>
+                {{ form.nombre }}
+            </div>
+
+            <!-- Compañía -->
+            <div class="col-md-6">
+                <label for="id_compania" class="form-label">Compañía</label>
+                {{ form.compania }}
+            </div>
+
+            <!-- Identificación -->
+            <div class="col-md-6">
+                <label for="id_identificacion" class="form-label">Código o ID</label>
+                {{ form.identificacion }}
+            </div>
+
+            <!-- Teléfono -->
+            <div class="col-md-6">
+                <label for="id_telefono" class="form-label">Teléfono</label>
+                {{ form.telefono }}
+            </div>
+
+            <!-- Correo -->
+            <div class="col-md-6">
+                <label for="id_correo" class="form-label">Correo electrónico</label>
+                {{ form.correo }}
+            </div>
+
+            <!-- País -->
+            <div class="col-md-6">
+                <label for="id_pais" class="form-label">País</label>
+                {{ form.pais }}
+            </div>
+
+            <!-- Dirección -->
+            <div class="col-12">
+                <label for="id_direccion" class="form-label">Dirección</label>
+                {{ form.direccion }}
+            </div>
+
+            <!-- Logo -->
+            <div class="col-12">
+                <label for="id_logo" class="form-label">Logo del cliente</label>
+                {{ form.logo }}
+            </div>
+
+            <!-- Botón -->
+            <div class="col-12 text-center mt-4">
+                <button type="submit" class="btn btn-success px-4 py-2">💾 Guardar cliente</button>
+                <a href="{% url 'lista_clientes' %}" class="btn btn-secondary px-4 py-2 ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-label {
+        font-weight: 600;
+    }
+    input, select, textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 4px #28a74550;
+        outline: none;
+    }
+</style>
+{% endblock %}

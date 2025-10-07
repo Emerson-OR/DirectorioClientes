@@ -6,6 +6,9 @@ from .forms import ClienteForm, RegistroForm
 from django.http import HttpResponseForbidden
 from django.contrib import messages
 
+# -----------------------------
+# Registro de usuarios
+# -----------------------------
 def registro(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
@@ -23,11 +26,9 @@ def registro(request):
     return render(request, 'registration/registro.html', {'form': form})
 
 
-
-
-# Login y logout usarían tus vistas genéricas actuales
-
-# Decorador para roles
+# -----------------------------
+# Decorador de roles
+# -----------------------------
 def rol_requerido(roles):
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):
@@ -37,12 +38,19 @@ def rol_requerido(roles):
         return _wrapped_view
     return decorator
 
-# Vistas de clientes
+
+# -----------------------------
+# Listar clientes
+# -----------------------------
 @login_required
 def lista_clientes(request):
     clientes = Cliente.objects.all()
     return render(request, 'clientes/lista.html', {'clientes': clientes})
 
+
+# -----------------------------
+# Agregar cliente
+# -----------------------------
 @login_required
 @rol_requerido(['admin', 'superadmin'])
 def agregar_cliente(request):
@@ -52,14 +60,40 @@ def agregar_cliente(request):
             cliente = form.save(commit=False)
             cliente.creado_por = request.user
             cliente.save()
+            messages.success(request, "✅ Cliente agregado exitosamente.")
             return redirect('lista_clientes')
+        else:
+            messages.error(request, "❌ Ocurrió un error al agregar el cliente.")
     else:
         form = ClienteForm()
+
     return render(request, 'clientes/agregar.html', {'form': form})
 
+
+# -----------------------------
+# Ver detalles del cliente
+# -----------------------------
+@login_required
+def detalle_cliente(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    # Genera enlace directo a Google Maps usando la dirección o el país
+    direccion_url = cliente.direccion or cliente.pais
+    maps_url = f"https://www.google.com/maps/search/?api=1&query={direccion_url.replace(' ', '+')}"
+    
+    return render(request, 'clientes/detalle.html', {
+        'cliente': cliente,
+        'maps_url': maps_url
+    })
+
+
+# -----------------------------
+# Eliminar cliente
+# -----------------------------
 @login_required
 @rol_requerido(['admin', 'superadmin'])
 def eliminar_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     cliente.delete()
+    messages.warning(request, "🗑️ Cliente eliminado correctamente.")
     return redirect('lista_clientes')
+

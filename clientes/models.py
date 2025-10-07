@@ -19,6 +19,10 @@ class Cliente(models.Model):
     nombre = models.CharField(max_length=100)
     compania = models.CharField(max_length=100)
     identificacion = models.CharField(max_length=50, unique=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    correo = models.EmailField(blank=True, null=True)
+    pais = models.CharField(max_length=100, blank=True, null=True)
+    direccion = models.CharField(max_length=255, blank=True, null=True, help_text="Dirección del cliente o ubicación aproximada.")
     logo = models.ImageField(upload_to='logos/', blank=True, null=True)
     creado_por = models.ForeignKey(
         Usuario,
@@ -32,3 +36,16 @@ class Cliente(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.compania})"
+
+    @property
+    def google_maps_link(self):
+        """
+        Genera automáticamente un enlace de Google Maps a partir de la dirección o país.
+        """
+        if self.direccion:
+            query = self.direccion
+        elif self.pais:
+            query = self.pais
+        else:
+            return None
+        return f"https://www.google.com/maps/search/?api=1&query={query.replace(' ', '+')}"
