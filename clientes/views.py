@@ -44,8 +44,9 @@ def rol_requerido(roles):
 # -----------------------------
 @login_required
 def lista_clientes(request):
-    clientes = Cliente.objects.all()
+    clientes = Cliente.objects.filter(activo=True)
     return render(request, 'clientes/lista.html', {'clientes': clientes})
+
 
 
 # -----------------------------
@@ -93,7 +94,8 @@ def detalle_cliente(request, pk):
 @rol_requerido(['admin', 'superadmin'])
 def eliminar_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
-    cliente.delete()
-    messages.warning(request, "🗑️ Cliente eliminado correctamente.")
+    cliente.activo = False  # 🔹 Se oculta en lugar de eliminar
+    cliente.save()
+    messages.warning(request, "🗑️ Cliente oculto correctamente.")
     return redirect('lista_clientes')
 

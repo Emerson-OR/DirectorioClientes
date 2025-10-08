@@ -1,10 +1,104 @@
-{% extends "base_auth.html" %}
-{% block content %}
-<h2>Iniciar sesión</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Ingresar</button>
-</form>
-<p>¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate</a></p>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directorio de Clientes - Iniciar Sesión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'gold-muted': '#b8975a',
+                        'gold-dark': '#8b7355',
+                        'charcoal': '#1a1a1a',
+                        'charcoal-light': '#2d2d2d',
+                        'charcoal-lighter': '#3a3a3a',
+                        'warm-gray': '#4a4a4a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Logo/Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gold-muted/10 rounded-2xl mb-4 border border-gold-muted/20">
+                <svg class="w-8 h-8 text-gold-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-2">Directorio de Clientes</h1>
+            <p class="text-gray-400 text-sm">Gestiona tu cartera de clientes de forma eficiente</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="bg-charcoal-light border border-warm-gray/30 rounded-2xl shadow-2xl p-8">
+            <h2 class="text-2xl font-semibold text-white mb-6">Iniciar Sesión</h2>
+            
+            <form id="loginForm" method="post" class="space-y-5">
+                {% csrf_token %}
+                
+                <!-- Email Input -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-300 mb-2">Correo Electrónico</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username"
+                        required
+                        class="w-full pl-3 pr-4 py-3 bg-charcoal-lighter border border-warm-gray/40 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold-muted/50 focus:border-gold-muted transition-all"
+                        placeholder="usuario@empresa.com"
+                    >
+                </div>
+
+                <!-- Password Input -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Contraseña</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password"
+                        required
+                        class="w-full pl-3 pr-4 py-3 bg-charcoal-lighter border border-warm-gray/40 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold-muted/50 focus:border-gold-muted transition-all"
+                        placeholder="••••••••"
+                    >
+                </div>
+
+                <!-- Remember Me -->
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center text-gray-400">
+                        <input type="checkbox" name="remember" class="w-4 h-4 bg-charcoal-lighter border-warm-gray/40 rounded text-gold-muted focus:ring-gold-muted/50 focus:ring-2 mr-2">
+                        Recordarme
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit"
+                    class="w-full bg-gold-muted hover:bg-gold-dark text-charcoal font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-gold-muted/50 focus:ring-offset-2 focus:ring-offset-charcoal-light"
+                >
+                    Iniciar Sesión
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <p class="text-center text-gray-500 text-sm mt-6">
+                ¿No tienes una cuenta? 
+                <a href="{% url 'registro' %}" class="text-gold-muted hover:text-gold-dark font-medium transition-colors">
+                    Regístrate aquí
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+
