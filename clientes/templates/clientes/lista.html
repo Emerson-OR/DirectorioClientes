@@ -2,7 +2,14 @@
 {% block content %}
 <h1>Directorio de Clientes</h1>
 
-<a class="btn btn-primary mb-3" href="{% url 'agregar_cliente' %}">Agregar Cliente</a>
+<!-- Mostrar "Agregar Cliente" solo si es admin o superadmin -->
+{% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
+  <div class="flex gap-2 mb-3">
+    <a class="btn btn-primary" href="{% url 'agregar_cliente' %}">Agregar Cliente</a>
+    <a class="btn btn-warning" href="{% url 'clientes_eliminados' %}">🗑️ Ver clientes eliminados</a>
+  </div>
+{% endif %}
+
 
 <div class="row">
   {% for cliente in clientes %}
@@ -24,10 +31,13 @@
           </p>
 
           <div class="d-flex justify-content-between">
+            <!-- Todos los usuarios pueden ver -->
             <a href="{% url 'detalle_cliente' cliente.pk %}" class="btn btn-info btn-sm">
               Ver detalles
             </a>
-            {% if user.rol in 'admin superadmin' %}
+
+            <!-- Solo admin/superadmin puede eliminar -->
+            {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
               <a href="{% url 'eliminar_cliente' cliente.pk %}" class="btn btn-danger btn-sm">
                 Eliminar
               </a>
@@ -41,4 +51,3 @@
   {% endfor %}
 </div>
 {% endblock %}
-

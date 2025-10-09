@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg mt-6">
-    <h2 class="text-2xl font-bold mb-4 text-center">{{ cliente.nombre }}</h2>
+    <h2 class="text-2xl font-bold mb-4 text-center">{{ cliente.compania }}</h2>
 
     {% if cliente.logo %}
     <div class="flex justify-center mb-4">
@@ -9,6 +9,22 @@
     </div>
     {% endif %}
 
+    {% if puede_editar %}
+    <!-- Formulario solo visible para admins y superadmins -->
+    <form method="POST" enctype="multipart/form-data" id="clienteForm">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="mt-4 flex justify-center gap-2">
+            <button type="button" id="editarBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                ✏️ Editar
+            </button>
+            <button type="submit" id="guardarBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 hidden">
+                💾 Guardar cambios
+            </button>
+        </div>
+    </form>
+    {% else %}
+    <!-- Mostrar solo los datos para usuarios normales -->
     <ul class="text-gray-700 space-y-2">
         <li><strong>Compañía:</strong> {{ cliente.compania }}</li>
         <li><strong>Identificación:</strong> {{ cliente.identificacion }}</li>
@@ -16,17 +32,40 @@
         <li><strong>Correo:</strong> {{ cliente.correo }}</li>
         <li><strong>País:</strong> {{ cliente.pais }}</li>
         <li><strong>Dirección:</strong> {{ cliente.direccion }}</li>
-        <li><strong>Creado por:</strong> {{ cliente.creado_por }}</li>
-        <li><strong>Fecha de creación:</strong> {{ cliente.creado_en|date:"d/m/Y H:i" }}</li>
     </ul>
+    {% endif %}
 
-    {% if maps_url %}
+    {% if maps_url and puede_editar %}
     <div class="mt-4 text-center">
         <a href="{{ maps_url }}" target="_blank" 
            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
            Ver ubicación en Google Maps
         </a>
     </div>
+    {% endif %}
+
+    <hr class="my-6">
+
+    <h4 class="text-lg font-semibold mb-2">Historial de cambios</h4>
+    {% if historial %}
+        <div class="max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-gray-50">
+            <ul class="text-gray-700 space-y-1">
+            {% for h in historial %}
+                <li>
+                    {{ h.fecha_edicion|date:"d/m/Y H:i" }} - 
+                    {% if h.editado_por %}
+                        {{ h.editado_por.username }}
+                    {% else %}
+                        Sistema
+                    {% endif %} 
+                    cambió <strong>{{ h.campo }}</strong> de 
+                    "{{ h.valor_anterior }}" a "{{ h.valor_nuevo }}"
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <p class="text-gray-500">No hay cambios registrados.</p>
     {% endif %}
 
     <div class="mt-6 text-center">
@@ -36,5 +75,26 @@
         </a>
     </div>
 </div>
+
+{% if puede_editar %}
+<script>
+    const form = document.getElementById('clienteForm');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    const editarBtn = document.getElementById('editarBtn');
+    const guardarBtn = document.getElementById('guardarBtn');
+
+    // Inicialmente, todos los campos en solo lectura
+    inputs.forEach(input => input.readOnly = true);
+
+    editarBtn.addEventListener('click', () => {
+        inputs.forEach(input => input.readOnly = false);
+        editarBtn.classList.add('hidden');
+        guardarBtn.classList.remove('hidden');
+    });
+</script>
+{% endif %}
 {% endblock %}
+
+
+
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Cliente
+from .models import Usuario, Cliente, HistorialCliente
 from django.utils.html import format_html
 
 
@@ -42,3 +42,12 @@ class UsuarioAdmin(UserAdmin):
         if request.user.rol != 'superadmin':
             return self.readonly_fields + ('rol', 'is_staff', 'is_superuser')
         return self.readonly_fields
+
+# ============================
+# CONFIGURACIÓN DEL MODELO HISTORIALCLIENTE
+# ============================
+@admin.register(HistorialCliente)
+class HistorialClienteAdmin(admin.ModelAdmin):
+    list_display = ('cliente', 'campo', 'valor_anterior', 'valor_nuevo', 'editado_por', 'fecha_edicion')
+    list_filter = ('fecha_edicion', 'campo', 'editado_por')
+    search_fields = ('cliente__nombre', 'campo', 'valor_anterior', 'valor_nuevo')

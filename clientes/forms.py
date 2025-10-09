@@ -28,7 +28,6 @@ class ClienteForm(forms.ModelForm):
             'nombre',
             'compania',
             'identificacion',
-            'telefono',
             'correo',
             'pais',
             'direccion',
@@ -38,7 +37,6 @@ class ClienteForm(forms.ModelForm):
             'nombre': 'Nombre del Cliente',
             'compania': 'Compañía',
             'identificacion': 'Código o ID',
-            'telefono': 'Teléfono',
             'correo': 'Correo Electrónico',
             'pais': 'País',
             'direccion': 'Dirección',
@@ -48,9 +46,16 @@ class ClienteForm(forms.ModelForm):
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre completo'}),
             'compania': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de la compañía'}),
             'identificacion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código o identificación'}),
-            'telefono': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Número de teléfono'}),
             'correo': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo electrónico'}),
             'pais': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'País'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección del cliente'}),
             'logo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }
+
+    # Sobrescribir __init__ para hacer campos opcionales
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if field_name != 'nombre':  # nombre sigue siendo obligatorio
+                field.required = False
+
