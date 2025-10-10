@@ -5,31 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Directorio{% endblock %}</title>
 
-    <!-- Tailwind CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #b8975a, #a08650);
+            color: #0a0a0a;
+            transition: all 0.3s ease;
+        }
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #a08650, #8a6d3f);
+            box-shadow: 0 8px 20px rgba(184,151,90,0.3);
+            transform: translateY(-2px);
+        }
+
+        .header-gradient {
+            background: linear-gradient(90deg, #0a0a0a 0%, #1a1a1a 50%, #2a2520 100%);
+        }
+    </style>
 
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-100 font-sans text-gray-800">
+<body class="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#2a2520] text-gray-200 font-sans">
 
     <!-- Header -->
-    <header class="bg-white shadow p-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold">Directorio de Clientes</h1>
+    <header class="header-gradient shadow-md border-b border-[#3a3a3a] p-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-[#b8975a] tracking-wide">Directorio de Clientes</h1>
 
         {% if user.is_authenticated %}
-            <form action="{% url 'logout' %}" method="post" class="inline">
-                {% csrf_token %}
-                <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">Cerrar sesión</button>
-            </form>
+        <form action="{% url 'logout' %}" method="post" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="btn-gold px-4 py-2 rounded-lg font-medium hover:scale-105">
+                Cerrar sesión
+            </button>
+        </form>
         {% endif %}
     </header>
 
     <!-- Contenido principal -->
-    <main class="container mx-auto p-4">
+    <main class="container mx-auto p-6 animate-fade-in-up">
         {% block content %}{% endblock %}
     </main>
 
 </body>
 </html>
+
 
 

@@ -43,19 +43,37 @@ class ClienteForm(forms.ModelForm):
             'logo': 'Logo del Cliente',
         }
         widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre completo'}),
-            'compania': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de la compañía'}),
-            'identificacion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código o identificación'}),
-            'correo': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo electrónico'}),
-            'pais': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'País'}),
-            'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección del cliente'}),
-            'logo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'nombre': forms.TextInput(attrs={
+                'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
+                'placeholder': 'Nombre completo'
+            }),
+            'compania': forms.TextInput(attrs={
+                'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
+                'placeholder': 'Nombre de la compañía'
+            }),
+            'identificacion': forms.TextInput(attrs={
+                'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
+                'placeholder': 'Código o identificación'
+            }),
+            'correo': forms.EmailInput(attrs={
+                'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
+                'placeholder': 'Correo electrónico'
+            }),
+            'pais': forms.TextInput(attrs={
+                'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
+                'placeholder': 'País'
+            }),
+            'direccion': forms.TextInput(attrs={
+                'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
+                'placeholder': 'Dirección del cliente'
+            }),
+            'logo': forms.ClearableFileInput(attrs={
+                'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50'
+            }),
         }
 
-    # Sobrescribir __init__ para hacer campos opcionales
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             if field_name != 'nombre':  # nombre sigue siendo obligatorio
                 field.required = False
-

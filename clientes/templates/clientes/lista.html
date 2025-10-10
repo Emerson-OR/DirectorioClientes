@@ -1,53 +1,113 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Directorio de Clientes</h1>
+
+<!-- Incluir Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
 <!-- Mostrar "Agregar Cliente" solo si es admin o superadmin -->
 {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
   <div class="flex gap-2 mb-3">
-    <a class="btn btn-primary" href="{% url 'agregar_cliente' %}">Agregar Cliente</a>
-    <a class="btn btn-warning" href="{% url 'clientes_eliminados' %}">🗑️ Ver clientes eliminados</a>
+    <a class="bg-black text-[#b8975a] hover:bg-[#1a1a1a] hover:text-[#d4af6a] font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all duration-300" href="{% url 'agregar_cliente' %}">
+      <i class="fa-solid fa-plus"></i> Agregar Cliente
+    </a>
+    <a class="bg-black text-[#b8975a] hover:bg-[#1a1a1a] hover:text-[#d4af6a] font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all duration-300" href="{% url 'clientes_eliminados' %}">
+      <i class="fa-solid fa-trash"></i> Ver clientes eliminados
+    </a>
   </div>
 {% endif %}
 
+<!-- Contenedor de clientes con animación -->
+<div id="clientes-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-500 ease-in-out opacity-100 transform">
+  {% for cliente in page_obj %}
+    <div class="glass-effect rounded-xl p-6 hover:scale-[1.02] transition-transform duration-300 w-full shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40">
 
-<div class="row">
-  {% for cliente in clientes %}
-    <div class="col-md-4 mb-3">
-      <div class="card p-2 shadow-sm">
-        {% if cliente.logo %}
-          <img src="{{ cliente.logo.url }}" class="card-img-top" style="max-height:140px;object-fit:contain;">
-        {% else %}
-          <div class="bg-light text-center py-5 text-muted">
-            <small>Sin logo</small>
-          </div>
-        {% endif %}
+      <!-- Flex container para datos y logo -->
+      <div class="flex justify-between items-center mb-4 gap-4">
+        
+        <!-- Datos a la izquierda -->
+        <div class="flex-1 space-y-2 text-gray-300">
+          <h3 class="text-lg font-semibold text-gray-100">{{ cliente.nombre }}</h3>
+          <p class="text-sm text-gray-400">{{ cliente.compania }}</p>
+          <p class="text-sm"><strong>ID:</strong> {{ cliente.identificacion }}</p>
+          <p class="text-sm"><strong>Correo:</strong> {{ cliente.correo }}</p>
+        </div>
 
-        <div class="card-body">
-          <h5 class="card-title">{{ cliente.nombre }}</h5>
-          <p class="card-text">
-            <strong>Compañía:</strong> {{ cliente.compania }}<br>
-            <strong>ID:</strong> {{ cliente.identificacion }}
-          </p>
-
-          <div class="d-flex justify-content-between">
-            <!-- Todos los usuarios pueden ver -->
-            <a href="{% url 'detalle_cliente' cliente.pk %}" class="btn btn-info btn-sm">
-              Ver detalles
-            </a>
-
-            <!-- Solo admin/superadmin puede eliminar -->
-            {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
-              <a href="{% url 'eliminar_cliente' cliente.pk %}" class="btn btn-danger btn-sm">
-                Eliminar
-              </a>
-            {% endif %}
-          </div>
+        <!-- Logo a la derecha, más grande -->
+        <div class="flex-shrink-0">
+          {% if cliente.logo %}
+            <img src="{{ cliente.logo.url }}" class="w-24 h-24 rounded-lg object-cover border-2 border-[#b8975a]/30 shadow-lg">
+          {% else %}
+            <div class="w-24 h-24 flex items-center justify-center bg-gray-200/20 rounded-lg text-gray-500 font-bold border border-[#b8975a]/30 shadow-lg">
+              {{ cliente.nombre|first|upper }}
+            </div>
+          {% endif %}
         </div>
       </div>
+
+      <!-- Botones -->
+      <div class="flex justify-between items-center mt-2">
+        <!-- Todos los usuarios pueden ver -->
+        <a href="{% url 'detalle_cliente' cliente.pk %}" 
+           class="bg-[#b8975a] hover:bg-[#d4af6a] text-black font-semibold px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 text-sm">
+          <i class="fa-solid fa-eye"></i> Ver detalles
+        </a>
+
+        <!-- Solo admin/superadmin puede eliminar -->
+        {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
+          <a href="{% url 'eliminar_cliente' cliente.pk %}" 
+             class="bg-red-800 hover:bg-red-900 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300">
+            <i class="fa-solid fa-trash"></i> Eliminar
+          </a>
+        {% endif %}
+      </div>
+
     </div>
   {% empty %}
-    <p>No hay clientes registrados.</p>
+    <p class="text-gray-400 text-center mt-6">No hay clientes registrados.</p>
   {% endfor %}
 </div>
+
+<!-- Paginación -->
+<div id="paginacion" class="flex justify-center mt-6 space-x-2">
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600">&laquo; Anterior</a>
+  {% endif %}
+
+  {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}
+      <span class="px-3 py-1 bg-[#b8975a] text-black rounded">{{ num }}</span>
+    {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+      <a href="?page={{ num }}" class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600">Siguiente &raquo;</a>
+  {% endif %}
+</div>
+
+<!-- JS para transición suave -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const clientesContainer = document.getElementById('clientes-container');
+  const links = document.querySelectorAll('#paginacion a');
+
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Animación salida
+      clientesContainer.classList.add('opacity-0', 'translate-y-4');
+
+      // Esperar transición y luego cambiar de página
+      setTimeout(() => {
+        window.location.href = link.href;
+      }, 500); // coincide con duration-500
+    });
+  });
+});
+</script>
+
 {% endblock %}
+
+
+

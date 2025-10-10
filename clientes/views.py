@@ -4,10 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from functools import wraps
 from django.utils import timezone
+from django.core.paginator import Paginator
 from .models import Cliente, Usuario, HistorialCliente
 from .forms import ClienteForm, RegistroForm
-from django.db.models.fields.files import FieldFile
-
 
 
 # -----------------------------
@@ -52,12 +51,20 @@ def rol_requerido(roles):
 
 
 # -----------------------------
-# Listar clientes activos
+# Listar clientes activos con paginación
 # -----------------------------
 @login_required
 def lista_clientes(request):
-    clientes = Cliente.objects.filter(activo=True)
-    return render(request, 'clientes/lista.html', {'clientes': clientes})
+    # Traer solo clientes activos ordenados por nombre
+    clientes_list = Cliente.objects.filter(activo=True).order_by('nombre')
+
+    # Configurar el paginador (6 clientes por página)
+    paginator = Paginator(clientes_list, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Pasar page_obj al template
+    return render(request, 'clientes/lista.html', {'page_obj': page_obj})
 
 
 # -----------------------------
@@ -82,16 +89,35 @@ def agregar_cliente(request):
 
 
 # -----------------------------
-# Ver detalles del cliente
+# Ver detalles del cliente y edición
 # -----------------------------
 @login_required
 def detalle_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
+
+    # Determinar si el usuario puede editar
+    puede_editar = request.user.rol in ['admin', 'superadmin'] or request.user.is_superuser
+
+    if request.method == "POST" and puede_editar:
+        form = ClienteForm(request.POST, request.FILES, instance=cliente)
+        if form.is_valid():
+            cliente = form.save(commit=False)
+            cliente.save(usuario=request.user)  # Historial automático
+            messages.success(request, "✅ Cliente actualizado correctamente.")
+            return redirect('detalle_cliente', pk=cliente.pk)
+    else:
+        form = ClienteForm(instance=cliente)
+
+    # Preparar URL de Google Maps
     direccion_url = cliente.direccion or cliente.pais
     maps_url = f"https://www.google.com/maps/search/?api=1&query={direccion_url.replace(' ', '+')}"
+
     return render(request, 'clientes/detalle.html', {
         'cliente': cliente,
-        'maps_url': maps_url
+        'form': form,
+        'maps_url': maps_url,
+        'historial': cliente.historial.all().order_by('-fecha_edicion'),
+        'puede_editar': puede_editar
     })
 
 
@@ -110,13 +136,17 @@ def eliminar_cliente(request, pk):
 
 
 # -----------------------------
-# Listar clientes eliminados
+# Listar clientes eliminados con paginación
 # -----------------------------
 @login_required
 @rol_requerido(['admin', 'superadmin'])
 def clientes_eliminados(request):
-    clientes = Cliente.objects.filter(activo=False)
-    return render(request, 'clientes/eliminados.html', {'clientes': clientes})
+    clientes_list = Cliente.objects.filter(activo=False).order_by('-fecha_eliminacion')
+    paginator = Paginator(clientes_list, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'clientes/eliminados.html', {'clientes': page_obj})
 
 
 # -----------------------------
@@ -131,32 +161,3 @@ def restaurar_cliente(request, pk):
     cliente.save()
     messages.success(request, f"✅ El cliente '{cliente.nombre}' fue restaurado correctamente.")
     return redirect('clientes_eliminados')
-
-# -----------------------------
-# detalle_cliente
-# -----------------------------
-@login_required
-def detalle_cliente(request, pk):
-    cliente = get_object_or_404(Cliente, pk=pk)
-
-    # Definir si el usuario puede editar
-    puede_editar = request.user.rol in ['admin', 'superadmin'] or request.user.is_superuser
-
-    if request.method == "POST" and puede_editar:
-        form = ClienteForm(request.POST, request.FILES, instance=cliente)
-        if form.is_valid():
-            # Guardar cambios pasando el usuario que hace la edición
-            cliente = form.save(commit=False)
-            cliente.save(usuario=request.user)  # 👈 historial automático
-            messages.success(request, "✅ Cliente actualizado correctamente.")
-            return redirect('detalle_cliente', pk=cliente.pk)
-    else:
-        form = ClienteForm(instance=cliente)
-
-    return render(request, 'clientes/detalle.html', {
-        'cliente': cliente,
-        'form': form,
-        'maps_url': cliente.google_maps_link,
-        'historial': cliente.historial.all().order_by('-fecha_edicion'),
-        'puede_editar': puede_editar
-    })
