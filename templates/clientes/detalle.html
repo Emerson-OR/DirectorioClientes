@@ -4,64 +4,44 @@
 
 <style>
 /* Scrollbar personalizada */
-.custom-scroll::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-.custom-scroll::-webkit-scrollbar-track {
-    background: #0a0a0a; 
-    border-radius: 8px;
-}
-.custom-scroll::-webkit-scrollbar-thumb {
-    background-color: #b8975a; 
-    border-radius: 8px;
-    border: 2px solid #1a1a1a; 
-}
-.custom-scroll::-webkit-scrollbar-thumb:hover {
-    background-color: #c9a869;
-}
-.custom-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: #b8975a #0a0a0a;
-}
+.custom-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.custom-scroll::-webkit-scrollbar-track { background: #0a0a0a; border-radius: 8px; }
+.custom-scroll::-webkit-scrollbar-thumb { background-color: #b8975a; border-radius: 8px; border: 2px solid #1a1a1a; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background-color: #c9a869; }
+.custom-scroll { scrollbar-width: thin; scrollbar-color: #b8975a #0a0a0a; }
 
 /* Animación */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+
+/* Contenedores */
+.detalle-card,
+.historial-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: auto;
 }
 
-/* Altura fija para la card de historial */
+/* Historial con scroll interno si crece demasiado */
 .historial-card {
-  max-height: 600px;
   overflow-y: auto;
+  max-height: 500px;
 }
 @media (max-width: 1024px) {
-  .historial-card { max-height: 500px; }
-}
-@media (max-width: 768px) {
-  .historial-card { max-height: 400px; }
+  .historial-card { max-height: none; }
 }
 
-/* Altura fija solo para el contenedor del logo */
-.logo-container {
-  height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
+/* Logo */
+.logo-container { height: 160px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.logo-img { height: 100%; width: auto; max-width: 100%; object-fit: contain; }
 
-/* Logo adapta su ancho automáticamente */
-.logo-img {
-  height: 100%;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
-}
+/* Inputs y botones personalizados */
+.input-focus-effect { transition: all 0.3s ease; }
+.input-focus-effect:focus { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(184,151,90,0.15); }
+.btn-primary { background: linear-gradient(135deg, #b8975a, #a08650); transition: all 0.3s ease; }
+.btn-primary:hover { background: linear-gradient(135deg, #a08650, #8a6d3f); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(184,151,90,0.3); }
+.btn-secondary:hover { background: #2a2a2a; transform: translateY(-2px); }
 </style>
 
 <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10 animate-fade-in-up">
@@ -85,118 +65,136 @@
   </div>
 
   <!-- Layout general -->
-  <div class="grid grid-cols-1 {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}lg:grid-cols-2 xl:grid-cols-3{% endif %} gap-8 items-start lg:items-stretch">
+  <div class="grid grid-cols-1 {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}lg:grid-cols-2 xl:grid-cols-3{% endif %} gap-8 items-start">
 
     <!-- Información del cliente -->
-    <div class="{% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}lg:col-span-1 xl:col-span-2{% else %}lg:col-span-1 xl:col-span-3{% endif %} overflow-x-hidden">
-      <div class="detalle-card bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40 transition-all duration-300 max-w-full sm:max-w-[95%] md:max-w-full mx-auto custom-scroll">
-        
-        <!-- Logo y compañía -->
-        <div class="text-center mb-8">
-          {% if cliente.logo_url %}
-            <div class="logo-container mx-auto flex justify-center">
-                <img src="{{ cliente.logo_url }}" alt="Logo de {{ cliente.compania }}" 
-                    class="logo-img rounded-lg object-contain border-2 border-[#b8975a]/40 shadow-lg" />
-            </div>
-          {% else %}
-            <div class="w-32 sm:w-40 md:w-48 mx-auto rounded-lg bg-[#0a0a0a]/50 flex items-center justify-center text-[#b8975a] font-bold text-xl border-2 border-[#b8975a]/30 shadow-lg">
-              {{ cliente.nombre|first|upper }}
-            </div>
-          {% endif %}
-          <h2 class="text-2xl font-semibold mt-4 text-[#b8975a]">{{ cliente.compania }}</h2>
-        </div>
+    <div class="{% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}lg:col-span-1 xl:col-span-2{% else %}lg:col-span-1 xl:col-span-3{% endif %}">
+      <div class="detalle-card bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40 transition-all duration-300">
 
         {% if puede_editar %}
-        <!-- Formulario editable -->
-        <form method="POST" enctype="multipart/form-data" id="clienteForm">
-          {% csrf_token %}
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-200 text-base leading-relaxed">
-            <div class="space-y-2">
-              {{ form.nombre.label_tag }}
-              {{ form.nombre }}
-              {% if form.nombre.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.nombre.errors|striptags }}</p>
-              {% endif %}
-            </div>
-            <div class="space-y-2">
-              {{ form.compania.label_tag }}
-              {{ form.compania }}
-              {% if form.compania.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.compania.errors|striptags }}</p>
-              {% endif %}
-            </div>
-            <div class="space-y-2">
-              {{ form.identificacion.label_tag }}
-              {{ form.identificacion }}
-              {% if form.identificacion.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.identificacion.errors|striptags }}</p>
-              {% endif %}
-            </div>
-            <div class="space-y-2">
-              {{ form.correo.label_tag }}
-              {{ form.correo }}
-              {% if form.correo.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.correo.errors|striptags }}</p>
-              {% endif %}
-            </div>
-          </div>
+          <!-- Formulario editable -->
+          <form method="POST" enctype="multipart/form-data" id="clienteForm">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          <!-- Botones Editar y Guardar -->
-          <div class="flex flex-wrap gap-3 justify-center mt-8">
-            <button type="button" id="editarBtn"
-              class="bg-[#b8975a] text-[#0a0a0a] hover:bg-[#0a0a0a] hover:text-[#b8975a] px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base flex items-center gap-2 border border-[#b8975a]/40 transition-all duration-300 shadow-md hover:shadow-lg">
-              ✏️ Editar
-            </button>
+              <!-- Columna Izquierda -->
+              <div class="space-y-6">
+                {{ form.nombre.label_tag }}{{ form.nombre }}
+                {{ form.compania.label_tag }}{{ form.compania }}
+                {{ form.identificacion.label_tag }}{{ form.identificacion }}
+                {{ form.correo.label_tag }}{{ form.correo }}
+              </div>
 
-            <button type="submit" id="guardarBtn"
-              class="bg-[#b8975a] text-[#0a0a0a] hover:bg-[#0a0a0a] hover:text-[#b8975a] px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hidden flex items-center gap-2 border border-[#b8975a]/40 transition-all duration-300 shadow-md hover:shadow-lg">
-              💾 Guardar Cambios
-            </button>
-          </div>
-        </form>
+              <!-- Columna Derecha: Logo -->
+              <div class="flex flex-col items-center justify-center space-y-4">
+                <label class="text-sm font-medium text-gray-300 text-center">Logo de la Compañía</label>
+                <div id="logoDropZone" class="logo-preview-area border-2 border-dashed border-[#3a3a3a] rounded-lg p-6 text-center cursor-pointer bg-[#0a0a0a] flex flex-col items-center justify-center w-full max-w-xs">
+                  <input type="file" id="logo" name="logo" accept="image/*" class="hidden">
+                  {% if cliente.logo_url %}
+                    <div id="logoPreview" class="flex flex-col items-center">
+                      <img id="logoImagePreview" src="{{ cliente.logo_url }}" alt="Logo preview" class="max-h-40 w-auto rounded-lg shadow-lg">
+                      <button type="button" id="removeLogo" class="mt-3 text-sm text-red-400 hover:text-red-300">Eliminar imagen</button>
+                    </div>
+                    <div id="logoPlaceholder" class="hidden text-gray-400 text-sm">Arrastra o <span class="text-[#b8975a]">haz clic</span></div>
+                  {% else %}
+                    <div id="logoPlaceholder" class="text-gray-400 text-sm text-center">Arrastra o <span class="text-[#b8975a] font-medium">haz clic</span> para seleccionar</div>
+                    <div id="logoPreview" class="hidden flex flex-col items-center">
+                      <img id="logoImagePreview" src="" alt="Logo preview" class="max-h-40 w-auto rounded-lg shadow-lg">
+                      <button type="button" id="removeLogo" class="mt-3 text-sm text-red-400 hover:text-red-300">Eliminar imagen</button>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-8">
+              <a href="{% url 'lista_clientes' %}" class="btn-secondary px-6 py-3 border border-[#3a3a3a] text-gray-300 rounded-lg">Cancelar</a>
+              <button type="submit" class="btn-primary px-8 py-3 text-[#0a0a0a] rounded-lg font-semibold">💾 Guardar Cambios</button>
+            </div>
+          </form>
+
+          <script>
+          const logoInput = document.getElementById('logo');
+          const dropZone = document.getElementById('logoDropZone');
+          const logoPlaceholder = document.getElementById('logoPlaceholder');
+          const logoPreview = document.getElementById('logoPreview');
+          const logoImagePreview = document.getElementById('logoImagePreview');
+          const removeLogoBtn = document.getElementById('removeLogo');
+
+          dropZone.addEventListener('click', () => logoInput.click());
+          dropZone.addEventListener('dragover', e => e.preventDefault());
+          dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file) previewLogo(file);
+          });
+          logoInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) previewLogo(file);
+          });
+          if (removeLogoBtn) {
+            removeLogoBtn.addEventListener('click', () => {
+              logoInput.value = '';
+              logoPreview.classList.add('hidden');
+              logoPlaceholder.classList.remove('hidden');
+            });
+          }
+          function previewLogo(file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+              logoImagePreview.src = e.target.result;
+              logoPlaceholder.classList.add('hidden');
+              logoPreview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+          }
+          </script>
 
         {% else %}
-        <!-- Vista solo lectura -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-300 text-base leading-relaxed">
-          <p><strong class="text-[#b8975a]">Nombre del Cliente:</strong><br>{{ cliente.nombre }}</p>
-          <p><strong class="text-[#b8975a]">Compañía:</strong><br>{{ cliente.compania }}</p>
-          <p><strong class="text-[#b8975a]">Código / ID:</strong><br>{{ cliente.identificacion }}</p>
-          <p><strong class="text-[#b8975a]">Correo Electrónico:</strong><br>{{ cliente.correo }}</p>
-        </div>
+          <!-- Vista solo lectura -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-300 text-base leading-relaxed">
+            <div class="space-y-3">
+              <p><strong class="text-[#b8975a]">Nombre:</strong> {{ cliente.nombre }}</p>
+              <p><strong class="text-[#b8975a]">Compañía:</strong> {{ cliente.compania }}</p>
+              <p><strong class="text-[#b8975a]">ID:</strong> {{ cliente.identificacion }}</p>
+              <p><strong class="text-[#b8975a]">Correo:</strong> {{ cliente.correo }}</p>
+            </div>
+            <div class="flex justify-center md:justify-end items-center">
+              <div class="logo-container">
+                {% if cliente.logo_url %}
+                  <img src="{{ cliente.logo_url }}" alt="Logo" class="logo-img rounded-lg shadow-lg border-2 border-[#b8975a]/30" />
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center bg-[#0a0a0a]/50 rounded-lg border-2 border-[#b8975a]/30 text-[#b8975a] font-bold text-3xl">
+                    {{ cliente.nombre|first|upper }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
         {% endif %}
       </div>
     </div>
 
-    <!-- Historial de cambios (solo para admin/superadmin) -->
+    <!-- Historial -->
     {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
-    <div class="lg:col-span-1 overflow-x-hidden flex justify-center">
-      <div class="historial-card bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40 transition-all duration-300 max-w-full sm:max-w-[95%] mx-auto overflow-y-auto custom-scroll">
+    <div class="lg:col-span-1 flex justify-center">
+      <div class="historial-card bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40 transition-all duration-300 custom-scroll">
         <div class="flex items-center justify-between mb-5">
           <h3 class="text-xl font-bold text-[#b8975a]">Historial</h3>
           <span class="text-xs text-gray-400 bg-[#b8975a]/10 px-3 py-1 rounded-full">{{ historial|length }} cambios</span>
         </div>
 
         {% if historial %}
-        <div class="space-y-5 pr-1 custom-scroll">
+        <div class="space-y-5 pr-1">
           {% for h in historial %}
           <div class="relative border-l-2 border-[#b8975a]/30 pl-4">
-            <div class="absolute -left-[8px] top-2 w-3 h-3 bg-[#b8975a] rounded-full shadow-md"></div>
-            <div class="bg-[#0a0a0a]/60 rounded-lg p-3 border border-gray-700/40 hover:border-[#b8975a]/40 transition-all duration-300 w-full">
+            <div class="absolute -left-[8px] top-2 w-3 h-3 bg-[#b8975a] rounded-full"></div>
+            <div class="bg-[#0a0a0a]/60 rounded-lg p-3 border border-gray-700/40 hover:border-[#b8975a]/40 transition-all">
               <div class="flex justify-between items-center mb-2">
-                <div class="text-gray-400 flex items-center gap-2 text-xs historial-fecha">
-                  {{ h.fecha_edicion_formateada }}
-                </div>
-                <span class="text-[#b8975a] text-xs font-medium">{% if h.editado_por %}{{ h.editado_por.username }}{% else %}<em>Sistema</em>{% endif %}</span>
+                <span class="text-xs text-gray-400">{{ h.fecha_edicion_formateada }}</span>
+                <span class="text-[#b8975a] text-xs">{% if h.editado_por %}{{ h.editado_por.username }}{% else %}<em>Sistema</em>{% endif %}</span>
               </div>
-
-              {% if h.fecha_eliminacion %}
-              <p class="text-red-400 text-xs mt-1">Eliminado el: <span class="historial-fecha-eliminacion">{{ h.fecha_eliminacion }}</span></p>
-              {% endif %}
-
-              <p class="text-base font-semibold text-gray-100 mb-1">
-                <span class="text-[#b8975a]">Campo:</span> {{ h.campo }}
-              </p>
-
+              <p class="text-base font-semibold text-gray-100 mb-1"><span class="text-[#b8975a]">Campo:</span> {{ h.campo }}</p>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
                 <div class="bg-red-500/10 border border-red-400/30 rounded-lg p-2">
                   <p class="text-xs uppercase tracking-wide text-red-400 font-medium mb-1">Anterior</p>
@@ -213,60 +211,12 @@
         </div>
         {% else %}
         <div class="rounded-lg p-6 text-center bg-[#0a0a0a]/60 border border-gray-700/50">
-          <svg class="w-12 h-12 mx-auto mb-3 text-[#b8975a]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
           <p class="text-gray-400 font-medium text-sm">No hay cambios registrados</p>
         </div>
         {% endif %}
       </div>
     </div>
     {% endif %}
-
   </div>
 </div>
-
-{% if puede_editar %}
-<script>
-const form = document.getElementById('clienteForm');
-const inputs = form.querySelectorAll('input, select, textarea');
-const editarBtn = document.getElementById('editarBtn');
-const guardarBtn = document.getElementById('guardarBtn');
-
-inputs.forEach(input => input.readOnly = true);
-
-editarBtn.addEventListener('click', () => {
-  inputs.forEach(input => input.readOnly = false);
-  editarBtn.classList.add('hidden');
-  guardarBtn.classList.remove('hidden');
-});
-</script>
-{% endif %}
-
-<!-- Formatear fechas -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const fechas = document.querySelectorAll('.historial-fecha');
-  fechas.forEach(el => {
-    let fechaOriginal = el.textContent.trim();
-    if(fechaOriginal) {
-      const fecha = new Date(fechaOriginal);
-      const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-      el.textContent = fecha.toLocaleDateString('es-CO', opciones);
-    }
-  });
-
-  const fechasEliminacion = document.querySelectorAll('.historial-fecha-eliminacion');
-  fechasEliminacion.forEach(el => {
-    let fechaOriginal = el.textContent.trim();
-    if(fechaOriginal) {
-      const fecha = new Date(fechaOriginal);
-      const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-      el.textContent = fecha.toLocaleDateString('es-CO', opciones);
-    }
-  });
-});
-</script>
-
 {% endblock %}
