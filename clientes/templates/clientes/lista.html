@@ -4,27 +4,47 @@
 <!-- Incluir Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
-<!-- Mostrar "Agregar Cliente" solo si es admin o superadmin -->
-{% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
-  <div class="flex gap-2 mb-3">
-    <a class="bg-black text-[#b8975a] hover:bg-[#1a1a1a] hover:text-[#d4af6a] font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all duration-300" href="{% url 'agregar_cliente' %}">
-      <i class="fa-solid fa-plus"></i> Agregar Cliente
-    </a>
-    <a class="bg-black text-[#b8975a] hover:bg-[#1a1a1a] hover:text-[#d4af6a] font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all duration-300" href="{% url 'clientes_eliminados' %}">
-      <i class="fa-solid fa-trash"></i> Ver clientes eliminados
-    </a>
-  </div>
-{% endif %}
+<!-- Controles superiores -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
 
-<!-- Contenedor de clientes con animación -->
+  <!-- Botones solo visibles para admin/superadmin -->
+  {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
+    <div class="flex gap-2">
+      <a class="bg-black text-[#b8975a] hover:bg-[#1a1a1a] hover:text-[#d4af6a] font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all duration-300" href="{% url 'agregar_cliente' %}">
+        <i class="fa-solid fa-plus"></i> Agregar Cliente
+      </a>
+      <a class="bg-black text-[#b8975a] hover:bg-[#1a1a1a] hover:text-[#d4af6a] font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all duration-300" href="{% url 'clientes_eliminados' %}">
+        <i class="fa-solid fa-trash"></i> Ver clientes eliminados
+      </a>
+      <a class="bg-black text-[#b8975a] hover:bg-[#1a1a1a] hover:text-[#d4af6a] font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all duration-300" href="{% url 'crear_usuario' %}">
+        <i class="fa-solid fa-user-plus"></i> Crear usuario
+      </a>
+    </div>
+  {% endif %}
+
+  <!-- Barra de búsqueda -->
+  <form method="GET" action="" class="mb-6 flex items-center justify-center gap-2">
+    <input type="text" name="q" placeholder="Buscar nombre, compañía, ID"
+      value="{{ query|default:'' }}"
+      class="w-[240px] px-4 py-2 rounded-lg bg-[#1a1a1a] border border-[#b8975a]/30 
+     text-gray-200 placeholder-gray-500 focus:border-[#b8975a] focus:ring-[#b8975a] 
+     focus:ring-1 transition-all duration-300 outline-none max-w-2xl" />
+    <button type="submit"
+            class="bg-[#b8975a] text-[#0a0a0a] font-semibold px-4 py-2 rounded-lg 
+                  hover:bg-[#d4af6a] hover:scale-105 transition-all duration-300">
+      <i class="fa-solid fa-search"></i>
+    </button>
+  </form>
+
+</div>
+
+<!-- Contenedor de clientes -->
 <div id="clientes-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-500 ease-in-out opacity-100 transform">
   {% for cliente in page_obj %}
     <div class="glass-effect rounded-xl p-6 hover:scale-[1.02] transition-transform duration-300 w-full shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40">
 
-      <!-- Flex container para datos y logo -->
       <div class="flex justify-between items-center mb-4 gap-4">
-        
-        <!-- Datos a la izquierda -->
+        <!-- Datos -->
         <div class="flex-1 space-y-2 text-gray-300">
           <h3 class="text-lg font-semibold text-gray-100">{{ cliente.nombre }}</h3>
           <p class="text-sm text-gray-400">{{ cliente.compania }}</p>
@@ -32,12 +52,12 @@
           <p class="text-sm"><strong>Correo:</strong> {{ cliente.correo }}</p>
         </div>
 
-        <!-- Logo a la derecha, más grande -->
-        <div class="flex-shrink-0">
-          {% if cliente.logo %}
-            <img src="{{ cliente.logo.url }}" class="w-24 h-24 rounded-lg object-cover border-2 border-[#b8975a]/30 shadow-lg">
+        <!-- Logo -->
+        <div class="flex-shrink-0 w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40">
+          {% if cliente.logo_url %}
+            <img src="{{ cliente.logo_url }}" alt="Logo de {{ cliente.nombre }}" class="w-full h-full rounded-lg object-cover border-2 border-[#b8975a]/30 shadow-lg">
           {% else %}
-            <div class="w-24 h-24 flex items-center justify-center bg-gray-200/20 rounded-lg text-gray-500 font-bold border border-[#b8975a]/30 shadow-lg">
+            <div class="w-full h-full flex items-center justify-center bg-gray-200/20 rounded-lg text-gray-500 font-bold border border-[#b8975a]/30 shadow-lg text-3xl">
               {{ cliente.nombre|first|upper }}
             </div>
           {% endif %}
@@ -46,17 +66,16 @@
 
       <!-- Botones -->
       <div class="flex justify-between items-center mt-2">
-        <!-- Todos los usuarios pueden ver -->
         <a href="{% url 'detalle_cliente' cliente.pk %}" 
-           class="bg-[#b8975a] hover:bg-[#d4af6a] text-black font-semibold px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 text-sm">
-          <i class="fa-solid fa-eye"></i> Ver detalles
+          class="flex items-center justify-center gap-1 text-[#b8975a] font-semibold text-sm py-1 px-3 transition-all duration-300 hover:text-[#e0b86d] hover:drop-shadow-[0_0_3px_#b8975a]">
+            <i class="fa-solid fa-eye"></i> Ver Detalles
         </a>
 
-        <!-- Solo admin/superadmin puede eliminar -->
         {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
           <a href="{% url 'eliminar_cliente' cliente.pk %}" 
-             class="bg-red-800 hover:bg-red-900 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300">
-            <i class="fa-solid fa-trash"></i> Eliminar
+              onclick="return confirm('⚠️ ¿Seguro que deseas eliminar este cliente? Esta acción no se puede deshacer.');"
+              class="flex items-center justify-center text-red-500 hover:text-red-700 transition-colors duration-300 text-lg">
+                <i class="fa-solid fa-trash"></i>
           </a>
         {% endif %}
       </div>
@@ -86,28 +105,31 @@
   {% endif %}
 </div>
 
-<!-- JS para transición suave -->
+<!-- Scripts -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const clientesContainer = document.getElementById('clientes-container');
   const links = document.querySelectorAll('#paginacion a');
 
+  // Transición suave al cambiar de página
   links.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      // Animación salida
       clientesContainer.classList.add('opacity-0', 'translate-y-4');
-
-      // Esperar transición y luego cambiar de página
       setTimeout(() => {
         window.location.href = link.href;
-      }, 500); // coincide con duration-500
+      }, 500);
     });
+  });
+
+  // Reinicio automático de búsqueda si input queda vacío
+  const inputBusqueda = document.querySelector('input[name="q"]');
+  inputBusqueda.addEventListener('input', () => {
+    if (inputBusqueda.value.trim() === '') {
+      window.location.href = window.location.pathname;
+    }
   });
 });
 </script>
 
 {% endblock %}
-
-
-

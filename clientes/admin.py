@@ -13,8 +13,9 @@ class ClienteAdmin(admin.ModelAdmin):
     search_fields = ('nombre', 'compania', 'identificacion')
 
     def logo_tag(self, obj):
-        if obj.logo:
-            return format_html('<img src="{}" width="50" />', obj.logo.url)
+        url = getattr(obj, 'logo_url', None)
+        if url:
+            return format_html('<img src="{}" width="50" />', url)
         return '-'
     logo_tag.short_description = 'Logo'
 

@@ -3,7 +3,7 @@
 {% block content %}
 
 <style>
-/* Estilo para scrollbars personalizados */
+/* Scrollbar personalizada */
 .custom-scroll::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -26,205 +26,247 @@
 }
 
 /* Animación */
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Altura fija para la card de historial */
+.historial-card {
+  max-height: 600px;
+  overflow-y: auto;
+}
+@media (max-width: 1024px) {
+  .historial-card { max-height: 500px; }
+}
+@media (max-width: 768px) {
+  .historial-card { max-height: 400px; }
+}
+
+/* Altura fija solo para el contenedor del logo */
+.logo-container {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Logo adapta su ancho automáticamente */
+.logo-img {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
 </style>
 
 <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10 animate-fade-in-up">
 
-    <!-- Encabezado -->
-    <div class="flex justify-between items-center mb-8">
-        <div class="flex items-center gap-3">
-            <button onclick="window.location.href='{% url 'lista_clientes' %}'"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#b8975a]/10 hover:bg-[#b8975a]/20 border border-[#b8975a]/30 transition-all duration-300 hover:scale-105">
-                <svg class="w-5 h-5 text-[#b8975a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                <span class="text-sm font-medium">Volver</span>
+  <!-- Encabezado -->
+  <div class="flex justify-between items-center mb-8">
+    <div class="flex items-center gap-3">
+      <button onclick="window.location.href='{% url 'lista_clientes' %}'"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#b8975a]/10 hover:bg-[#b8975a]/20 border border-[#b8975a]/30 transition-all duration-300 hover:scale-105">
+        <svg class="w-5 h-5 text-[#b8975a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        <span class="text-sm font-medium">Volver</span>
+      </button>
+
+      <div>
+        <h1 class="text-3xl font-bold text-[#b8975a]">Detalles del Cliente</h1>
+        <p class="text-gray-400 text-sm">Consulta la información completa y el historial de modificaciones</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout general -->
+  <div class="grid grid-cols-1 {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}lg:grid-cols-2 xl:grid-cols-3{% endif %} gap-8 items-start lg:items-stretch">
+
+    <!-- Información del cliente -->
+    <div class="{% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}lg:col-span-1 xl:col-span-2{% else %}lg:col-span-1 xl:col-span-3{% endif %} overflow-x-hidden">
+      <div class="detalle-card bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40 transition-all duration-300 max-w-full sm:max-w-[95%] md:max-w-full mx-auto custom-scroll">
+        
+        <!-- Logo y compañía -->
+        <div class="text-center mb-8">
+          {% if cliente.logo_url %}
+            <div class="logo-container mx-auto flex justify-center">
+                <img src="{{ cliente.logo_url }}" alt="Logo de {{ cliente.compania }}" 
+                    class="logo-img rounded-lg object-contain border-2 border-[#b8975a]/40 shadow-lg" />
+            </div>
+          {% else %}
+            <div class="w-32 sm:w-40 md:w-48 mx-auto rounded-lg bg-[#0a0a0a]/50 flex items-center justify-center text-[#b8975a] font-bold text-xl border-2 border-[#b8975a]/30 shadow-lg">
+              {{ cliente.nombre|first|upper }}
+            </div>
+          {% endif %}
+          <h2 class="text-2xl font-semibold mt-4 text-[#b8975a]">{{ cliente.compania }}</h2>
+        </div>
+
+        {% if puede_editar %}
+        <!-- Formulario editable -->
+        <form method="POST" enctype="multipart/form-data" id="clienteForm">
+          {% csrf_token %}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-200 text-base leading-relaxed">
+            <div class="space-y-2">
+              {{ form.nombre.label_tag }}
+              {{ form.nombre }}
+              {% if form.nombre.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.nombre.errors|striptags }}</p>
+              {% endif %}
+            </div>
+            <div class="space-y-2">
+              {{ form.compania.label_tag }}
+              {{ form.compania }}
+              {% if form.compania.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.compania.errors|striptags }}</p>
+              {% endif %}
+            </div>
+            <div class="space-y-2">
+              {{ form.identificacion.label_tag }}
+              {{ form.identificacion }}
+              {% if form.identificacion.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.identificacion.errors|striptags }}</p>
+              {% endif %}
+            </div>
+            <div class="space-y-2">
+              {{ form.correo.label_tag }}
+              {{ form.correo }}
+              {% if form.correo.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.correo.errors|striptags }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Botones Editar y Guardar -->
+          <div class="flex flex-wrap gap-3 justify-center mt-8">
+            <button type="button" id="editarBtn"
+              class="bg-[#b8975a] text-[#0a0a0a] hover:bg-[#0a0a0a] hover:text-[#b8975a] px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base flex items-center gap-2 border border-[#b8975a]/40 transition-all duration-300 shadow-md hover:shadow-lg">
+              ✏️ Editar
             </button>
 
-            <div>
-                <h1 class="text-3xl font-bold text-[#b8975a]">Detalles del Cliente</h1>
-                <p class="text-gray-400 text-sm">Consulta la información completa y el historial de modificaciones</p>
-            </div>
+            <button type="submit" id="guardarBtn"
+              class="bg-[#b8975a] text-[#0a0a0a] hover:bg-[#0a0a0a] hover:text-[#b8975a] px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hidden flex items-center gap-2 border border-[#b8975a]/40 transition-all duration-300 shadow-md hover:shadow-lg">
+              💾 Guardar Cambios
+            </button>
+          </div>
+        </form>
+
+        {% else %}
+        <!-- Vista solo lectura -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-300 text-base leading-relaxed">
+          <p><strong class="text-[#b8975a]">Nombre del Cliente:</strong><br>{{ cliente.nombre }}</p>
+          <p><strong class="text-[#b8975a]">Compañía:</strong><br>{{ cliente.compania }}</p>
+          <p><strong class="text-[#b8975a]">Código / ID:</strong><br>{{ cliente.identificacion }}</p>
+          <p><strong class="text-[#b8975a]">Correo Electrónico:</strong><br>{{ cliente.correo }}</p>
         </div>
+        {% endif %}
+      </div>
     </div>
 
-    <!-- Layout general -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-        <!-- Información del cliente -->
-        <div class="lg:col-span-1 xl:col-span-2 overflow-x-hidden">
-            <div class="bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40 transition-all duration-300 max-w-full sm:max-w-[95%] md:max-w-full mx-auto custom-scroll">
-                
-                <!-- Logo y compañía -->
-                <div class="text-center mb-8">
-                    {% if cliente.logo %}
-                        <img src="{{ cliente.logo.url }}" 
-                             alt="Logo de {{ cliente.compania }}" 
-                             class="w-32 sm:w-40 md:w-48 mx-auto rounded-lg object-cover border-2 border-[#b8975a]/40 shadow-lg">
-                    {% else %}
-                        <div class="w-32 sm:w-40 md:w-48 mx-auto rounded-lg bg-[#0a0a0a]/50 flex items-center justify-center text-[#b8975a] font-bold text-xl border-2 border-[#b8975a]/30 shadow-lg">
-                            {{ cliente.nombre|first|upper }}
-                        </div>
-                    {% endif %}
-                    <h2 class="text-2xl font-semibold mt-4 text-[#b8975a]">{{ cliente.compania }}</h2>
-                </div>
-
-                {% if puede_editar %}
-                <!-- Formulario editable -->
-                <form method="POST" enctype="multipart/form-data" id="clienteForm">
-                    {% csrf_token %}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-200 text-base leading-relaxed">
-                        {% for field in form %}
-                            <div class="space-y-2">
-                                {{ field.label_tag }}
-                                {{ field }}
-                                {% if field.errors %}
-                                    <p class="text-red-500 text-xs mt-1">{{ field.errors|striptags }}</p>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="flex flex-wrap gap-3 justify-center mt-6">
-                        <button type="button" id="editarBtn"
-                            class="bg-[#b8975a] hover:bg-[#c9a869] text-black px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base flex items-center gap-2 transition-all duration-300">
-                            ✏️ Editar
-                        </button>
-                        <button type="submit" id="guardarBtn"
-                            class="bg-[#b8975a] hover:bg-[#c9a869] text-black px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hidden flex items-center gap-2 transition-all duration-300">
-                            💾 Guardar Cambios
-                        </button>
-                    </div>
-                </form>
-                {% else %}
-                <!-- Vista solo lectura -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-300 text-base leading-relaxed">
-                    <p><strong class="text-[#b8975a]">Nombre del Cliente:</strong><br>{{ cliente.nombre }}</p>
-                    <p><strong class="text-[#b8975a]">Compañía:</strong><br>{{ cliente.compania }}</p>
-                    <p><strong class="text-[#b8975a]">Código / ID:</strong><br>{{ cliente.identificacion }}</p>
-                    <p><strong class="text-[#b8975a]">Correo Electrónico:</strong><br>{{ cliente.correo }}</p>
-                    <p><strong class="text-[#b8975a]">País:</strong><br>{{ cliente.pais }}</p>
-                    <p><strong class="text-[#b8975a]">Dirección:</strong><br>{{ cliente.direccion }}</p>
-                </div>
-                {% endif %}
-
-                {% if maps_url %}
-                <div class="mt-6 text-center">
-                    <a href="{{ maps_url }}" target="_blank"
-                       class="bg-[#b8975a] hover:bg-[#c9a869] text-black px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base flex items-center gap-3 justify-center transition-all duration-300">
-                        📍 Ver en Maps
-                    </a>
-                </div>
-                {% endif %}
-            </div>
+    <!-- Historial de cambios (solo para admin/superadmin) -->
+    {% if user.is_superuser or user.rol == 'admin' or user.rol == 'superadmin' %}
+    <div class="lg:col-span-1 overflow-x-hidden flex justify-center">
+      <div class="historial-card bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40 transition-all duration-300 max-w-full sm:max-w-[95%] mx-auto overflow-y-auto custom-scroll">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-xl font-bold text-[#b8975a]">Historial</h3>
+          <span class="text-xs text-gray-400 bg-[#b8975a]/10 px-3 py-1 rounded-full">{{ historial|length }} cambios</span>
         </div>
 
-        <!-- Historial de cambios -->
-        <div class="lg:col-span-1 overflow-x-hidden">
-            <div class="bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40 transition-all duration-300 max-w-full sm:max-w-[95%] mx-auto">
-                <div class="flex items-center justify-between mb-5">
-                    <h3 class="text-xl font-bold text-[#b8975a]">Historial</h3>
-                    <span class="text-xs text-gray-400 bg-[#b8975a]/10 px-3 py-1 rounded-full">{{ historial|length }} cambios</span>
+        {% if historial %}
+        <div class="space-y-5 pr-1 custom-scroll">
+          {% for h in historial %}
+          <div class="relative border-l-2 border-[#b8975a]/30 pl-4">
+            <div class="absolute -left-[8px] top-2 w-3 h-3 bg-[#b8975a] rounded-full shadow-md"></div>
+            <div class="bg-[#0a0a0a]/60 rounded-lg p-3 border border-gray-700/40 hover:border-[#b8975a]/40 transition-all duration-300 w-full">
+              <div class="flex justify-between items-center mb-2">
+                <div class="text-gray-400 flex items-center gap-2 text-xs historial-fecha">
+                  {{ h.fecha_edicion_formateada }}
                 </div>
+                <span class="text-[#b8975a] text-xs font-medium">{% if h.editado_por %}{{ h.editado_por.username }}{% else %}<em>Sistema</em>{% endif %}</span>
+              </div>
 
-                {% if historial %}
-                <div class="space-y-5 max-h-[70vh] overflow-y-auto overflow-x-hidden pr-1 custom-scroll">
-                    {% for h in historial %}
-                    <div class="relative border-l-2 border-[#b8975a]/30 pl-4">
-                        <div class="absolute -left-[8px] top-2 w-3 h-3 bg-[#b8975a] rounded-full shadow-md"></div>
-                        <div class="bg-[#0a0a0a]/60 rounded-lg p-3 border border-gray-700/40 hover:border-[#b8975a]/40 transition-all duration-300 w-full">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="text-gray-400 flex items-center gap-2 text-xs historial-fecha">
-                                    {{ h.fecha_edicion_formateada }}
-                                </div>
-                                <span class="text-[#b8975a] text-xs font-medium">{% if h.editado_por %}{{ h.editado_por.username }}{% else %}<em>Sistema</em>{% endif %}</span>
-                            </div>
+              {% if h.fecha_eliminacion %}
+              <p class="text-red-400 text-xs mt-1">Eliminado el: <span class="historial-fecha-eliminacion">{{ h.fecha_eliminacion }}</span></p>
+              {% endif %}
 
-                            {% if h.fecha_eliminacion %}
-                            <p class="text-red-400 text-xs mt-1">Eliminado el: <span class="historial-fecha-eliminacion">{{ h.fecha_eliminacion }}</span></p>
-                            {% endif %}
+              <p class="text-base font-semibold text-gray-100 mb-1">
+                <span class="text-[#b8975a]">Campo:</span> {{ h.campo }}
+              </p>
 
-                            <p class="text-base font-semibold text-gray-100 mb-1">
-                                <span class="text-[#b8975a]">Campo:</span> {{ h.campo }}
-                            </p>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
-                                <div class="bg-red-500/10 border border-red-400/30 rounded-lg p-2">
-                                    <p class="text-xs uppercase tracking-wide text-red-400 font-medium mb-1">Anterior</p>
-                                    <p class="text-sm text-gray-200">{{ h.valor_anterior }}</p>
-                                </div>
-                                <div class="bg-green-500/10 border border-green-400/30 rounded-lg p-2">
-                                    <p class="text-xs uppercase tracking-wide text-green-400 font-medium mb-1">Nuevo</p>
-                                    <p class="text-sm text-gray-200">{{ h.valor_nuevo }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                <div class="bg-red-500/10 border border-red-400/30 rounded-lg p-2">
+                  <p class="text-xs uppercase tracking-wide text-red-400 font-medium mb-1">Anterior</p>
+                  <p class="text-sm text-gray-200">{{ h.valor_anterior|slice:12 }}</p>
                 </div>
-                {% else %}
-                <div class="rounded-lg p-6 text-center bg-[#0a0a0a]/60 border border-gray-700/50">
-                    <svg class="w-12 h-12 mx-auto mb-3 text-[#b8975a]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <p class="text-gray-400 font-medium text-sm">No hay cambios registrados</p>
+                <div class="bg-green-500/10 border border-green-400/30 rounded-lg p-2">
+                  <p class="text-xs uppercase tracking-wide text-green-400 font-medium mb-1">Nuevo</p>
+                  <p class="text-sm text-gray-200">{{ h.valor_nuevo|slice:12 }}</p>
                 </div>
-                {% endif %}
+              </div>
             </div>
+          </div>
+          {% endfor %}
         </div>
-
+        {% else %}
+        <div class="rounded-lg p-6 text-center bg-[#0a0a0a]/60 border border-gray-700/50">
+          <svg class="w-12 h-12 mx-auto mb-3 text-[#b8975a]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-gray-400 font-medium text-sm">No hay cambios registrados</p>
+        </div>
+        {% endif %}
+      </div>
     </div>
+    {% endif %}
+
+  </div>
 </div>
 
 {% if puede_editar %}
 <script>
-    const form = document.getElementById('clienteForm');
-    const inputs = form.querySelectorAll('input, select, textarea');
-    const editarBtn = document.getElementById('editarBtn');
-    const guardarBtn = document.getElementById('guardarBtn');
+const form = document.getElementById('clienteForm');
+const inputs = form.querySelectorAll('input, select, textarea');
+const editarBtn = document.getElementById('editarBtn');
+const guardarBtn = document.getElementById('guardarBtn');
 
-    inputs.forEach(input => input.readOnly = true);
+inputs.forEach(input => input.readOnly = true);
 
-    editarBtn.addEventListener('click', () => {
-        inputs.forEach(input => input.readOnly = false);
-        editarBtn.classList.add('hidden');
-        guardarBtn.classList.remove('hidden');
-    });
+editarBtn.addEventListener('click', () => {
+  inputs.forEach(input => input.readOnly = false);
+  editarBtn.classList.add('hidden');
+  guardarBtn.classList.remove('hidden');
+});
 </script>
 {% endif %}
 
-<!-- Script para formatear fechas del historial -->
+<!-- Formatear fechas -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Formatear fechas de edición
-    const fechas = document.querySelectorAll('.historial-fecha');
-    fechas.forEach(el => {
-        let fechaOriginal = el.textContent.trim();
-        if(fechaOriginal) {
-            const fecha = new Date(fechaOriginal);
-            const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            el.textContent = fecha.toLocaleDateString('es-CO', opciones);
-        }
-    });
+  const fechas = document.querySelectorAll('.historial-fecha');
+  fechas.forEach(el => {
+    let fechaOriginal = el.textContent.trim();
+    if(fechaOriginal) {
+      const fecha = new Date(fechaOriginal);
+      const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      el.textContent = fecha.toLocaleDateString('es-CO', opciones);
+    }
+  });
 
-    // Formatear fechas de eliminación
-    const fechasEliminacion = document.querySelectorAll('.historial-fecha-eliminacion');
-    fechasEliminacion.forEach(el => {
-        let fechaOriginal = el.textContent.trim();
-        if(fechaOriginal) {
-            const fecha = new Date(fechaOriginal);
-            const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            el.textContent = fecha.toLocaleDateString('es-CO', opciones);
-        }
-    });
+  const fechasEliminacion = document.querySelectorAll('.historial-fecha-eliminacion');
+  fechasEliminacion.forEach(el => {
+    let fechaOriginal = el.textContent.trim();
+    if(fechaOriginal) {
+      const fecha = new Date(fechaOriginal);
+      const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      el.textContent = fecha.toLocaleDateString('es-CO', opciones);
+    }
+  });
 });
 </script>
 
 {% endblock %}
-
-
-
-
-

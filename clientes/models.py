@@ -2,7 +2,10 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 import uuid
 from django.db.models.fields.files import FieldFile
-from django.utils import timezone  # 👈 para manejar zona horaria
+from django.utils import timezone
+import pytz
+import os
+from django.conf import settings
 
 # -------------------------------
 # Usuario personalizado
@@ -48,7 +51,17 @@ class Cliente(models.Model):
     @property
     def fecha_eliminacion_formateada(self):
         if self.fecha_eliminacion:
-            return timezone.localtime(self.fecha_eliminacion).strftime('%Y-%m-%d %H:%M')
+            colombia_tz = pytz.timezone('America/Bogota')
+            fecha_colombia = timezone.localtime(self.fecha_eliminacion, colombia_tz)
+            return fecha_colombia.strftime('%d-%m-%Y, %I:%M %p')
+        return None
+
+    @property
+    def actualizado_en_formateado(self):
+        if self.actualizado_en:
+            colombia_tz = pytz.timezone('America/Bogota')
+            fecha_colombia = timezone.localtime(self.actualizado_en, colombia_tz)
+            return fecha_colombia.strftime('%d-%m-%Y, %I:%M %p')
         return None
 
     @property
@@ -61,16 +74,61 @@ class Cliente(models.Model):
             return None
         return f"https://www.google.com/maps/search/?api=1&query={query.replace(' ', '+')}"
 
+    @property
+    def logo_url(self):
+        """
+        Devuelve la URL del logo si existe en el campo ImageField.
+        Si no hay logo cargado, intenta buscar un archivo en media/logos
+        con el identificador del cliente y extensiones comunes.
+        """
+        try:
+            if self.logo and hasattr(self.logo, 'url') and self.logo.url:
+                return self.logo.url
+        except Exception:
+            # Si el archivo referenciado no existe en disco, continuamos con el fallback
+            pass
+
+        # Fallback: buscar por identificacion en media/logos
+        if not self.identificacion:
+            return None
+
+        posibles_ext = ('.png', '.jpg', '.jpeg', '.webp')
+        for ext in posibles_ext:
+            disco_path = os.path.join(settings.MEDIA_ROOT, 'logos', f"{self.identificacion}{ext}")
+            if os.path.exists(disco_path):
+                return settings.MEDIA_URL + f"logos/{self.identificacion}{ext}"
+        return None
+
     def save(self, *args, usuario=None, **kwargs):
+        """
+        Sobrescribe save() para:
+        1️⃣ Eliminar microsegundos de fechas.
+        2️⃣ Registrar historial solo de campos relevantes.
+        """
+        # 🔹 Formatear las fechas
+        if self.fecha_eliminacion:
+            self.fecha_eliminacion = self.fecha_eliminacion.replace(microsecond=0)
+        if self.creado_en:
+            self.creado_en = self.creado_en.replace(microsecond=0)
+        self.actualizado_en = timezone.now().replace(microsecond=0)
+
+        # 🔹 Solo registrar historial si el objeto ya existe
         if self.pk:
             old = Cliente.objects.get(pk=self.pk)
             cambios = []
 
+            # Campos que no queremos en historial
+            campos_ignorar = ['creado_en', 'actualizado_en', 'activo']
+
             for field in self._meta.fields:
                 field_name = field.name
+                if field_name in campos_ignorar:
+                    continue
+
                 old_value = getattr(old, field_name)
                 new_value = getattr(self, field_name)
 
+                # Comparar FieldFile
                 if isinstance(old_value, FieldFile):
                     old_str = old_value.name if old_value else ''
                     new_str = new_value.name if new_value else ''
@@ -83,6 +141,7 @@ class Cliente(models.Model):
                 if cambio_real:
                     cambios.append((field_name, old_str, new_str))
 
+            # Crear historial solo para cambios reales
             for campo, anterior, nuevo in cambios:
                 HistorialCliente.objects.create(
                     cliente=self,
@@ -113,10 +172,20 @@ class HistorialCliente(models.Model):
     )
     fecha_edicion = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        # 🔹 Elimina microsegundos antes de guardar
+        if not self.fecha_edicion:
+            self.fecha_edicion = timezone.now().replace(microsecond=0)
+        else:
+            self.fecha_edicion = self.fecha_edicion.replace(microsecond=0)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.cliente.nombre} - {self.campo} cambiado por {self.editado_por} el {self.fecha_edicion_formateada}"
 
     @property
     def fecha_edicion_formateada(self):
-        return timezone.localtime(self.fecha_edicion).strftime('%Y-%m-%d %H:%M')
-
+        """Retorna la fecha en formato colombiano: DD-MM-YYYY, HH:MM AM/PM"""
+        colombia_tz = pytz.timezone('America/Bogota')
+        fecha_colombia = timezone.localtime(self.fecha_edicion, colombia_tz)
+        return fecha_colombia.strftime('%d-%m-%Y, %I:%M %p')

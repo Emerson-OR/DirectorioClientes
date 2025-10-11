@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.core.paginator import Paginator
 from .models import Cliente, Usuario, HistorialCliente
 from .forms import ClienteForm, RegistroForm
+from django.db.models import Q
 
 
 # -----------------------------
@@ -32,6 +33,32 @@ def registro(request):
 
 
 # -----------------------------
+# Crear usuario (solo admin/superadmin) sin cambiar sesión actual
+# -----------------------------
+@login_required
+def crear_usuario(request):
+    if not (request.user.is_superuser or request.user.rol in ['admin', 'superadmin']):
+        messages.error(request, "🚫 No tienes permiso para crear usuarios.")
+        return redirect('lista_clientes')
+
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            # No autenticar ni cambiar la sesión; solo crear el usuario
+            nuevo_usuario = form.save(commit=False)
+            # El formulario ya asigna rol 'usuario' por defecto
+            nuevo_usuario.save()
+            messages.success(request, f"✅ Usuario '{nuevo_usuario.username}' creado correctamente.")
+            return redirect('lista_clientes')
+        else:
+            messages.error(request, "❌ Revisa los errores del formulario.")
+    else:
+        form = RegistroForm()
+
+    return render(request, 'clientes/crear_usuario.html', { 'form': form })
+
+
+# -----------------------------
 # Decorador de roles
 # -----------------------------
 def rol_requerido(roles):
@@ -51,20 +78,43 @@ def rol_requerido(roles):
 
 
 # -----------------------------
-# Listar clientes activos con paginación
+# Listar clientes activos con búsqueda y paginación (más recientes primero)
 # -----------------------------
 @login_required
 def lista_clientes(request):
-    # Traer solo clientes activos ordenados por nombre
-    clientes_list = Cliente.objects.filter(activo=True).order_by('nombre')
+    query = request.GET.get('q', '').strip()  # Limpia espacios
 
-    # Configurar el paginador (6 clientes por página)
+    # Base: clientes activos, los más recientes primero
+    clientes_list = Cliente.objects.filter(activo=True).order_by('-creado_en')
+
+    if query:
+        # Filtra sin distinguir mayúsculas/minúsculas
+        clientes_list = clientes_list.filter(
+            Q(nombre__icontains=query) |
+            Q(compania__icontains=query) |
+            Q(identificacion__icontains=query)
+        )
+
+        # Ordena coincidencias: exactas primero, luego parciales
+        query_lower = query.lower()
+        clientes_list = sorted(
+            clientes_list,
+            key=lambda c: (
+                0 if c.nombre.lower().startswith(query_lower) else
+                1 if query_lower in c.nombre.lower() else
+                2
+            )
+        )
+
+    # Paginación
     paginator = Paginator(clientes_list, 9)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Pasar page_obj al template
-    return render(request, 'clientes/lista.html', {'page_obj': page_obj})
+    return render(request, 'clientes/lista.html', {
+        'page_obj': page_obj,
+        'query': query
+    })
 
 
 # -----------------------------
@@ -108,9 +158,8 @@ def detalle_cliente(request, pk):
     else:
         form = ClienteForm(instance=cliente)
 
-    # Preparar URL de Google Maps
-    direccion_url = cliente.direccion or cliente.pais
-    maps_url = f"https://www.google.com/maps/search/?api=1&query={direccion_url.replace(' ', '+')}"
+    # Preparar URL de Google Maps de forma segura (puede ser None)
+    maps_url = cliente.google_maps_link
 
     return render(request, 'clientes/detalle.html', {
         'cliente': cliente,

@@ -9,6 +9,38 @@ class RegistroForm(UserCreationForm):
     class Meta:
         model = Usuario
         fields = ['username', 'email', 'password1', 'password2']
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'w-full bg-white text-black border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50 placeholder-gray-500',
+                'placeholder': 'Nombre de usuario'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'w-full bg-white text-black border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50 placeholder-gray-500',
+                'placeholder': 'usuario@empresa.com'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        base_classes = 'w-full bg-white text-black border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50 placeholder-gray-500'
+        # Asegurar estilos en todos los campos, incluidos password1/password2 que no son de modelo
+        self.fields['username'].widget.attrs.update({
+            'class': base_classes,
+            'placeholder': self.fields['username'].widget.attrs.get('placeholder', 'Nombre de usuario')
+        })
+        if 'email' in self.fields:
+            self.fields['email'].widget.attrs.update({
+                'class': base_classes,
+                'placeholder': self.fields['email'].widget.attrs.get('placeholder', 'usuario@empresa.com')
+            })
+        self.fields['password1'].widget.attrs.update({
+            'class': base_classes,
+            'placeholder': self.fields['password1'].widget.attrs.get('placeholder', 'Mínimo 8 caracteres')
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': base_classes,
+            'placeholder': self.fields['password2'].widget.attrs.get('placeholder', 'Repite tu contraseña')
+        })
 
     def save(self, commit=True):
         user = super().save(commit=False)
