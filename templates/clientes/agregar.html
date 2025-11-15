@@ -10,34 +10,68 @@
     <title>Nuevo Cliente</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        :root {
+            --amber-400: #fbbf24;
+            --amber-500: #f59e0b;
+            --amber-600: #d97706;
+            --ring: rgba(245, 158, 11, 0.35);
+        }
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
         .input-focus-effect { transition: all 0.3s ease; }
-        .input-focus-effect:focus { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(184,151,90,0.15); }
+        .input-focus-effect:focus { transform: translateY(-2px); box-shadow: 0 0 0 6px var(--ring); border-color: var(--amber-500); }
         .btn-primary {
-            background: linear-gradient(135deg, #b8975a, #a08650);
+            background: linear-gradient(135deg, var(--amber-400), var(--amber-600));
             transition: all 0.3s ease;
         }
         .btn-primary:hover {
-            background: linear-gradient(135deg, #a08650, #8a6d3f);
+            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(184,151,90,0.3);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--amber-400);
+            border-color: var(--ring);
+            transition: all 0.3s ease;
         }
         .btn-secondary:hover {
-            background: #2a2a2a;
+            background: rgba(245, 158, 11, 0.06);
+            color: var(--amber-500);
             transform: translateY(-2px);
+        }
+
+        body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+        .page-title {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(92deg, var(--amber-400), var(--amber-600));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
         }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#2a2520] p-8">
 
     <div class="max-w-5xl mx-auto animate-fade-in-up">
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+                <div class="px-4 py-3 rounded-lg border text-sm
+                    {% if message.tags == 'error' %}border-red-500/30 bg-red-500/10 text-red-300
+                    {% elif message.tags == 'warning' %}border-yellow-500/30 bg-yellow-500/10 text-yellow-300
+                    {% else %}border-amber-500/30 bg-amber-500/10 text-amber-300{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         <div class="flex items-center gap-3 mb-4">
-            <div class="w-1 h-8 bg-gradient-to-b from-[#b8975a] to-[#8a6d3f] rounded-full"></div>
-            <h1 class="text-3xl font-bold text-gray-200">Agregar nuevo cliente</h1>
+            <div class="w-1 h-8 bg-gradient-to-b from-[#fbbf24] to-[#d97706] rounded-full"></div>
+            <h1 class="text-3xl page-title">Agregar nuevo cliente</h1>
         </div>
 
         <form method="POST" enctype="multipart/form-data"
@@ -62,10 +96,18 @@
                         {{ form.identificacion|add_class:"w-full px-4 py-3 bg-[#0a0a0a] border border-[#3a3a3a] rounded-lg text-gray-200 input-focus-effect" }}
                     </div>
 
-                    <div>
-                        <label for="id_correo" class="block text-gray-300 font-medium mb-2">Correo Electrónico</label>
-                        {{ form.correo|add_class:"w-full px-4 py-3 bg-[#0a0a0a] border border-[#3a3a3a] rounded-lg text-gray-200 input-focus-effect" }}
-                    </div>
+                                        <div>
+                                                <label for="id_pais" class="block text-gray-300 font-medium mb-2">Estado (EE. UU.)</label>
+                                                <select id="id_pais" name="pais"
+                                                        class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#3a3a3a] rounded-lg text-gray-200 input-focus-effect">
+                                                    {% for value, label in form.pais.field.choices %}
+                                                        <option value="{{ value }}" {% if form.pais.value == value %}selected{% endif %}>
+                                                            {{ value }} - {{ label }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+
+                                        </div>
                 </div>
 
                 <!-- Columna Derecha: Solo Logo -->
@@ -91,7 +133,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                 </svg>
                                 <div>
-                                    <p class="text-gray-400 text-sm">Arrastra una imagen o <span class="text-[#b8975a] font-medium">haz clic para seleccionar</span></p>
+                                    <p class="text-gray-400 text-sm">Arrastra una imagen o <span class="text-[#fbbf24] font-medium">haz clic para seleccionar</span></p>
                                     <p class="text-gray-600 text-xs mt-1">PNG, JPG, GIF hasta 5MB</p>
                                 </div>
                             </div>

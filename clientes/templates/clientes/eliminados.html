@@ -10,9 +10,9 @@
     <style>
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
-        .gold-gradient { background: linear-gradient(135deg, #b8975a 0%, #d4af6a 100%); }
-        .glass-effect { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(184, 151, 90, 0.2); }
-        .logo-circle { width: 48px; height: 48px; border-radius: 9999px; border: 2px solid #b8975a; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .gold-gradient { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); }
+        .glass-effect { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(245, 158, 11, 0.30); }
+        .logo-circle { width: 48px; height: 48px; border-radius: 9999px; border: 2px solid #fbbf24; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .logo-img { width: 100%; height: 100%; object-cover: cover; }
     </style>
 </head>
@@ -24,18 +24,18 @@
     <div class="flex justify-between items-center mb-8">
         <div class="flex items-center gap-3">
             <button onclick="window.location.href='{% url 'lista_clientes' %}'"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#b8975a]/10 hover:bg-[#b8975a]/20 border border-[#b8975a]/30 transition-all duration-300 hover:scale-105">
-                <svg class="w-5 h-5 text-[#b8975a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f59e0b]/10 hover:bg-[#f59e0b]/20 border border-[#f59e0b]/30 transition-all duration-300 hover:scale-105">
+                <svg class="w-5 h-5 text-[#fbbf24]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
                 <span class="text-sm font-medium">Volver</span>
             </button>
             <div>
-                <h1 class="text-3xl font-bold text-[#b8975a]">Clientes Eliminados</h1>
+                <h1 class="text-3xl font-bold text-[#fbbf24]">Clientes Eliminados</h1>
                 <p class="text-gray-400 text-sm">Gestiona y restaura clientes eliminados del sistema</p>
             </div>
         </div>
-        <span class="text-[#b8975a] font-semibold text-lg">
+        <span class="text-[#fbbf24] font-semibold text-lg">
             Total: {{ clientes|length }}
         </span>
     </div>
@@ -72,13 +72,13 @@
 
             <div class="text-sm space-y-2 mb-5">
                 <p class="flex items-center gap-2 text-gray-300">
-                    <svg class="w-4 h-4 text-[#b8975a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-[#fbbf24]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
                     </svg>
                     {{ cliente.identificacion }}
                 </p>
                 <p class="flex items-center gap-2 text-gray-300">
-                    <svg class="w-4 h-4 text-[#b8975a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-[#fbbf24]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
                     {{ cliente.correo }}
@@ -86,7 +86,7 @@
             </div>
 
             <a href="{% url 'restaurar_cliente' cliente.pk %}" 
-               class="w-full inline-flex justify-center items-center px-4 py-3 gold-gradient text-black font-semibold rounded-lg hover:shadow-lg hover:shadow-[#b8975a]/30 transition-all duration-300">
+               class="w-full inline-flex justify-center items-center px-4 py-3 gold-gradient text-black font-semibold rounded-lg hover:shadow-lg hover:shadow-[#fbbf24]/30 transition-all duration-300">
                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -101,12 +101,12 @@
     <div class="text-center py-20">
         <div class="mb-6">
             <div class="w-32 h-32 mx-auto rounded-full glass-effect flex items-center justify-center">
-                <svg class="w-16 h-16 text-[#b8975a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-16 h-16 text-[#fbbf24]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
         </div>
-        <h3 class="text-2xl font-bold text-[#b8975a] mb-3">No hay clientes eliminados</h3>
+        <h3 class="text-2xl font-bold text-[#fbbf24] mb-3">No hay clientes eliminados</h3>
         <p class="text-gray-400 mb-6">Todos tus clientes están activos en el sistema</p>
         <a href="{% url 'lista_clientes' %}" class="px-6 py-3 gold-gradient text-black font-semibold rounded-lg hover:shadow-lg hover:shadow-[#b8975a]/30 transition-all duration-300">
             Ver Clientes Activos

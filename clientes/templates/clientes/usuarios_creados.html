@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios Creados{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-black mb-6 bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">Usuarios creados por ti</h1>
+
+  {% if registros.paginator.count == 0 %}
+    <div class="rounded-xl border border-amber-500/30 p-6 bg-zinc-900/60">
+      <p class="text-zinc-400">Aún no has creado usuarios.</p>
+    </div>
+  {% else %}
+  <div class="overflow-x-auto rounded-xl border border-amber-500/30 bg-zinc-950/70">
+    <table class="min-w-full text-sm">
+      <thead class="text-amber-400 border-b border-amber-500/30">
+        <tr>
+          <th class="text-left font-semibold px-4 py-3">Usuario</th>
+          <th class="text-left font-semibold px-4 py-3">Rol</th>
+          <th class="text-left font-semibold px-4 py-3">Fecha creación</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reg in registros %}
+        <tr class="border-b border-zinc-800/60 hover:bg-amber-500/5">
+          <td class="px-4 py-3 font-medium text-amber-100">{{ reg.usuario.username }}</td>
+          <td class="px-4 py-3 text-amber-300">{{ reg.usuario.get_rol_display }}</td>
+          <td class="px-4 py-3 text-zinc-400">{{ reg.creado_en|date:'d-m-Y H:i' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if registros.has_other_pages %}
+  <div class="flex justify-center gap-2 mt-6">
+    {% if registros.has_previous %}
+      <a href="?page=1" class="px-3 py-2 rounded-lg bg-zinc-900 border border-amber-500/30 text-amber-400 text-xs">Primera</a>
+      <a href="?page={{ registros.previous_page_number }}" class="px-3 py-2 rounded-lg bg-zinc-900 border border-amber-500/30 text-amber-400 text-xs">Anterior</a>
+    {% endif %}
+    <span class="px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs">Página {{ registros.number }} de {{ registros.paginator.num_pages }}</span>
+    {% if registros.has_next %}
+      <a href="?page={{ registros.next_page_number }}" class="px-3 py-2 rounded-lg bg-zinc-900 border border-amber-500/30 text-amber-400 text-xs">Siguiente</a>
+      <a href="?page={{ registros.paginator.num_pages }}" class="px-3 py-2 rounded-lg bg-zinc-900 border border-amber-500/30 text-amber-400 text-xs">Última</a>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <div class="mt-8 flex gap-3">
+    <a href="{% url 'crear_usuario' %}" class="group relative overflow-hidden bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold py-2.5 px-4 rounded-xl shadow-lg hover:from-amber-600 hover:to-amber-700 transition-all">
+      <span class="inline-flex items-center gap-2">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg>
+        Crear nuevo usuario
+      </span>
+    </a>
+    <a href="{% url 'lista_clientes' %}" class="px-4 py-2 rounded-xl bg-zinc-900 border border-amber-500/30 text-amber-400 font-semibold">Volver a clientes</a>
+  </div>
+</div>
+{% endblock %}

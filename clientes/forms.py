@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import Cliente, Usuario
+from .services.states_api import fetch_us_states
+
 
 # ----------------------------
 # Formulario de registro de usuario
@@ -22,38 +24,38 @@ class RegistroForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        base_classes = 'w-full bg-white text-black border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50 placeholder-gray-500'
-        # Asegurar estilos en todos los campos, incluidos password1/password2 que no son de modelo
-        self.fields['username'].widget.attrs.update({
-            'class': base_classes,
-            'placeholder': self.fields['username'].widget.attrs.get('placeholder', 'Nombre de usuario')
-        })
-        if 'email' in self.fields:
-            self.fields['email'].widget.attrs.update({
-                'class': base_classes,
-                'placeholder': self.fields['email'].widget.attrs.get('placeholder', 'usuario@empresa.com')
-            })
-        self.fields['password1'].widget.attrs.update({
-            'class': base_classes,
-            'placeholder': self.fields['password1'].widget.attrs.get('placeholder', 'Mínimo 8 caracteres')
-        })
-        self.fields['password2'].widget.attrs.update({
-            'class': base_classes,
-            'placeholder': self.fields['password2'].widget.attrs.get('placeholder', 'Repite tu contraseña')
-        })
+        base_classes = (
+            'w-full bg-white text-black border border-[#b8975a]/30 '
+            'rounded-lg px-3 py-2 focus:outline-none focus:ring-2 '
+            'focus:ring-[#b8975a]/50 placeholder-gray-500'
+        )
+
+        # Aplicar clases comunes
+        for key in self.fields:
+            self.fields[key].widget.attrs.update({'class': base_classes})
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.rol = 'usuario'  # Rol por defecto
+        user.rol = 'usuario'
         if commit:
             user.save()
         return user
 
 
 # ----------------------------
-# Formulario de cliente (ampliado)
+# Formulario de cliente
 # ----------------------------
 class ClienteForm(forms.ModelForm):
+
+    # Cambiamos pais → ChoiceField
+    pais = forms.ChoiceField(
+        required=False,
+        label="Estado (USA)",
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 bg-[#0a0a0a] border border-[#3a3a3a] rounded-lg text-gray-200 input-focus-effect'
+        })
+    )
+
     class Meta:
         model = Cliente
         fields = [
@@ -65,15 +67,7 @@ class ClienteForm(forms.ModelForm):
             'direccion',
             'logo',
         ]
-        labels = {
-            'nombre': 'Nombre del Cliente',
-            'compania': 'Compañía',
-            'identificacion': 'Código o ID',
-            'correo': 'Correo Electrónico',
-            'pais': 'País',
-            'direccion': 'Dirección',
-            'logo': 'Logo del Cliente',
-        }
+
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
@@ -91,10 +85,6 @@ class ClienteForm(forms.ModelForm):
                 'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
                 'placeholder': 'Correo electrónico'
             }),
-            'pais': forms.TextInput(attrs={
-                'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
-                'placeholder': 'País'
-            }),
             'direccion': forms.TextInput(attrs={
                 'class': 'w-full bg-[#1a1a1a]/80 text-gray-200 border border-[#b8975a]/30 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b8975a]/50',
                 'placeholder': 'Dirección del cliente'
@@ -106,6 +96,24 @@ class ClienteForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # --------------------------
+        # Cargar estados desde API
+        # --------------------------
+        estados = fetch_us_states()
+        
+        print("DEBUG API:", estados)
+
+        if estados:
+            # → CORRECCIÓN: usar e["code"] y e["name"]
+            self.fields['pais'].choices = [("", "Seleccione un estado")] + [
+                (e["code"], f"{e['code']} - {e['name']}")
+                for e in estados
+            ]
+        else:
+            self.fields['pais'].choices = [("", "No disponible")]
+
+        # Hacer no obligatorios todos excepto nombre
         for field_name, field in self.fields.items():
-            if field_name != 'nombre':  # nombre sigue siendo obligatorio
+            if field_name != 'nombre':
                 field.required = False

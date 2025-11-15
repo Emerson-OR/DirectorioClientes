@@ -10,5 +10,6 @@ urlpatterns = [
     path('eliminados/', views.clientes_eliminados, name='clientes_eliminados'),
     path('restaurar/<int:pk>/', views.restaurar_cliente, name='restaurar_cliente'),
     path('usuarios/nuevo/', views.crear_usuario, name='crear_usuario'),
+    path('usuarios/creados/', views.usuarios_creados, name='usuarios_creados'),
 
 ]

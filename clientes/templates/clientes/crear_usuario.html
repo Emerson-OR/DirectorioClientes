@@ -1,12 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-xl mx-auto bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-xl border border-[#b8975a]/25 hover:border-[#b8975a]/40 transition-all duration-300">
-  <h1 class="text-2xl font-bold text-[#b8975a] mb-4">Crear nuevo usuario</h1>
+<style>
+  .page-title{font-weight:800;letter-spacing:-.02em;background:linear-gradient(92deg,#fbbf24,#d97706);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .card{background:rgba(12,12,12,.8)}
+  .card{backdrop-filter:blur(12px); border:2px solid rgba(245,158,11,.25)}
+  .card:hover{border-color:rgba(245,158,11,.4)}
+  .field input, .field select, .field textarea{width:100%;background:#0b1324;color:#e5e7eb;border:1px solid #1f2a44;border-radius:10px;padding:.65rem .8rem;outline:none;transition:border-color .2s ease, box-shadow .2s ease}
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:#f59e0b;box-shadow:0 0 0 6px rgba(245,158,11,.35)}
+  .btn-ghost{background:transparent;color:#fbbf24;border:1px solid rgba(245,158,11,.35);transition:all .2s ease}
+  .btn-ghost:hover{background:rgba(245,158,11,.06);color:#f59e0b;border-color:#f59e0b}
+  .btn-amber{background:linear-gradient(135deg,#fbbf24,#d97706);color:#0b0f19;font-weight:700;transition:all .2s ease;box-shadow:0 8px 20px rgba(245,158,11,.25)}
+  .btn-amber:hover{filter:brightness(1.02);box-shadow:0 10px 26px rgba(245,158,11,.35)}
+  .password-wrapper{position:relative;}
+  .password-toggle{position:absolute;top:50%;right:.6rem;transform:translateY(-50%);background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.4);font-size:.65rem;font-weight:600;padding:.3rem .55rem;border-radius:.55rem;cursor:pointer;letter-spacing:.5px;transition:all .2s ease}
+  .password-toggle:hover{background:rgba(245,158,11,.25);color:#fde68a;border-color:#f59e0b}
+  .password-toggle:focus{outline:2px solid rgba(245,158,11,.5);outline-offset:2px}
+</style>
+
+<div class="max-w-xl mx-auto card rounded-2xl p-6 sm:p-8 shadow-xl transition-all duration-300">
+  <h1 class="text-2xl page-title mb-4">Crear nuevo usuario</h1>
 
   <form method="post" class="space-y-4">
     {% csrf_token %}
 
-    <div>
+    <div class="field">
       <label class="block text-sm font-medium text-gray-300 mb-1">Usuario</label>
   {{ form.username }}
       {% if form.username.errors %}
@@ -14,7 +31,7 @@
       {% endif %}
     </div>
 
-    <div>
+    <div class="field">
       <label class="block text-sm font-medium text-gray-300 mb-1">Correo</label>
   {{ form.email }}
       {% if form.email.errors %}
@@ -23,16 +40,22 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
+      <div class="field">
         <label class="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
-  {{ form.password1 }}
+        <div class="password-wrapper">
+          {{ form.password1 }}
+          <button type="button" class="password-toggle" data-target="id_password1" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button>
+        </div>
         {% if form.password1.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.password1.errors|striptags }}</p>
         {% endif %}
       </div>
-      <div>
+      <div class="field">
         <label class="block text-sm font-medium text-gray-300 mb-1">Confirmar contraseña</label>
-  {{ form.password2 }}
+        <div class="password-wrapper">
+          {{ form.password2 }}
+          <button type="button" class="password-toggle" data-target="id_password2" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button>
+        </div>
         {% if form.password2.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.password2.errors|striptags }}</p>
         {% endif %}
@@ -40,9 +63,29 @@
     </div>
 
     <div class="flex justify-end mt-6">
-      <a href="{% url 'lista_clientes' %}" class="px-4 py-2 rounded-lg bg-[#0a0a0a] text-[#b8975a] border border-[#b8975a]/30 mr-2">Cancelar</a>
-      <button type="submit" class="px-4 py-2 rounded-lg bg-[#b8975a] text-[#0a0a0a] font-semibold hover:bg-[#d4af6a]">Crear usuario</button>
+      <a href="{% url 'lista_clientes' %}" class="px-4 py-2 rounded-lg btn-ghost mr-2">Cancelar</a>
+      <button type="submit" class="px-4 py-2 rounded-lg btn-amber">Crear usuario</button>
     </div>
   </form>
 </div>
+<script>
+  // Toggle mostrar/ocultar contraseña para los campos password1 y password2
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.password-toggle').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const input = document.getElementById(btn.dataset.target);
+        if(!input) return;
+        if(input.type === 'password'){
+          input.type = 'text';
+          btn.textContent = 'Ocultar';
+          btn.setAttribute('aria-pressed','true');
+        } else {
+          input.type = 'password';
+          btn.textContent = 'Mostrar';
+          btn.setAttribute('aria-pressed','false');
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}

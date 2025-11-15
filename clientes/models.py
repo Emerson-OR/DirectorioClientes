@@ -189,3 +189,24 @@ class HistorialCliente(models.Model):
         colombia_tz = pytz.timezone('America/Bogota')
         fecha_colombia = timezone.localtime(self.fecha_edicion, colombia_tz)
         return fecha_colombia.strftime('%d-%m-%Y, %I:%M %p')
+
+# -------------------------------
+# Registro de usuarios creados por administradores
+# -------------------------------
+class UsuarioCreado(models.Model):
+    creador = models.ForeignKey(
+        Usuario,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='registros_usuarios_creados'
+    )
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='registro_de_creacion'
+    )
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        creador = self.creador.username if self.creador else 'desconocido'
+        return f"{self.usuario.username} creado por {creador}"
