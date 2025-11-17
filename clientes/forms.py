@@ -102,7 +102,6 @@ class ClienteForm(forms.ModelForm):
         # --------------------------
         estados = fetch_us_states()
         
-        print("DEBUG API:", estados)
 
         if estados:
             # → CORRECCIÓN: usar e["code"] y e["name"]

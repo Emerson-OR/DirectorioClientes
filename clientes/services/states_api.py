@@ -5,8 +5,6 @@ def fetch_us_states():
 
     try:
         resp = requests.get(url, timeout=8)
-        print("RAW RESPONSE:", resp.text)     # DEBUG
-        print("STATUS CODE:", resp.status_code)  # DEBUG
 
         resp.raise_for_status()
 
@@ -26,7 +24,6 @@ def fetch_us_states():
             if name and code:
                 estados.append({"name": name, "code": code})
 
-        print("ESTADOS OBTENIDOS:", estados)  # Debug
         return estados
 
     except Exception as e:
