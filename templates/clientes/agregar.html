@@ -128,6 +128,8 @@
                                 accept="image/*"
                                 class="hidden"
                             >
+                            <!-- Hidden flag to indicate the user removed an existing image -->
+                            <input type="hidden" id="remove_logo_flag" name="remove_logo" value="0">
                             <div id="logoPlaceholder" class="space-y-3">
                                 <svg class="w-16 h-16 mx-auto text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -178,21 +180,79 @@
         const logoImage = document.getElementById('logoImage');
         const removeLogoBtn = document.getElementById('removeLogo');
 
-        dropZone.addEventListener('click', () => logoInput.click());
-        dropZone.addEventListener('dragover', e => e.preventDefault());
+        // Prevent click from opening file dialog immediately after a drop
+        let didDrop = false;
+
+        dropZone.addEventListener('click', (e) => {
+            if (didDrop) {
+                // consume the click caused by the mouseup after drop
+                didDrop = false;
+                e.stopPropagation();
+                return;
+            }
+            logoInput.click();
+        });
+
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
         dropZone.addEventListener('drop', e => {
             e.preventDefault();
+            e.stopPropagation();
+            didDrop = true;
+            // reset flag shortly after to allow normal clicks afterwards
+            setTimeout(() => { didDrop = false; }, 300);
+
             const file = e.dataTransfer.files[0];
-            if (file) previewLogo(file);
+            if (file) {
+                // populate the hidden input so the file is actually submitted with the form
+                try {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    logoInput.files = dt.files;
+                } catch (err) {
+                    // DataTransfer may not be supported on some very old browsers; in that case
+                    // we still show the preview but the input won't have the file automatically.
+                    console.warn('DataTransfer not supported:', err);
+                }
+
+                // If a new file is provided by drop, unset the remove flag
+                const removeFlag = document.getElementById('remove_logo_flag');
+                if (removeFlag) removeFlag.value = '0';
+
+                previewLogo(file);
+            }
         });
         logoInput.addEventListener('change', e => {
             const file = e.target.files[0];
-            if (file) previewLogo(file);
+            const removeFlag = document.getElementById('remove_logo_flag');
+            if (file) {
+                // New file selected -> ensure remove flag is cleared
+                if (removeFlag) removeFlag.value = '0';
+                previewLogo(file);
+            } else {
+                // user opened the file dialog and pressed Cancel — clear the preview to reflect no file
+                logoInput.value = '';
+                logoPreview.classList.add('hidden');
+                logoPlaceholder.classList.remove('hidden');
+            }
         });
-        removeLogoBtn.addEventListener('click', () => {
+        removeLogoBtn.addEventListener('click', (e) => {
+            // Prevent the click from bubbling up to dropZone (which would open the file dialog)
+            e.stopPropagation();
+            // Clear the input and preview
             logoInput.value = '';
+            try { // also clear files list if supported
+                const dt = new DataTransfer();
+                logoInput.files = dt.files;
+            } catch (err) { /* ignore */ }
             logoPreview.classList.add('hidden');
             logoPlaceholder.classList.remove('hidden');
+            // Mark that the user removed the image so server-side won't require re-upload
+            const removeFlag = document.getElementById('remove_logo_flag');
+            if (removeFlag) removeFlag.value = '1';
         });
 
         function previewLogo(file) {

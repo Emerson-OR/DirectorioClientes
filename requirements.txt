@@ -14,5 +14,10 @@ requests==2.32.3
 six==1.17.0
 sqlparse==0.5.3
 tzdata==2025.2
+
+python-decouple
+python-dotenv
+resend
+
 # xlwings is no longer required for imports; keep only if you still use it somewhere else
 # xlwings==0.33.16

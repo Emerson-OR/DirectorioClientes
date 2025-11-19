@@ -105,6 +105,8 @@
                 <label class="text-sm font-medium text-gray-300 text-center">Logo de la Compañía</label>
                 <div id="logoDropZone" class="logo-preview-area border-2 border-dashed border-[#3a3a3a] rounded-lg p-6 text-center cursor-pointer bg-[#0a0a0a] flex flex-col items-center justify-center w-full max-w-xs">
                   <input type="file" id="logo" name="logo" accept="image/*" class="hidden">
+                  <!-- Hidden flag to indicate the user removed an existing image -->
+                  <input type="hidden" id="remove_logo_flag" name="remove_logo" value="0">
                   {% if cliente.logo_url %}
                     <div id="logoPreview" class="flex flex-col items-center">
                       <img id="logoImagePreview" src="{{ cliente.logo_url }}" alt="Logo preview" class="max-h-40 w-auto rounded-lg shadow-lg">
@@ -136,24 +138,77 @@
           const logoImagePreview = document.getElementById('logoImagePreview');
           const removeLogoBtn = document.getElementById('removeLogo');
 
-          dropZone.addEventListener('click', () => logoInput.click());
-          dropZone.addEventListener('dragover', e => e.preventDefault());
+          // Prevent click from opening file dialog immediately after a drop
+          let didDrop = false;
+
+          dropZone.addEventListener('click', (e) => {
+            if (didDrop) {
+              didDrop = false;
+              e.stopPropagation();
+              return;
+            }
+            logoInput.click();
+          });
+
+          dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+
           dropZone.addEventListener('drop', e => {
             e.preventDefault();
+            e.stopPropagation();
+            didDrop = true;
+            setTimeout(() => { didDrop = false; }, 300);
+
             const file = e.dataTransfer.files[0];
-            if (file) previewLogo(file);
+            if (file) {
+              // populate the hidden input so the file is actually submitted with the form
+              try {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                logoInput.files = dt.files;
+              } catch (err) {
+                console.warn('DataTransfer not supported:', err);
+              }
+
+              // If a new file is provided by drop, unset the remove flag
+              const removeFlag = document.getElementById('remove_logo_flag');
+              if (removeFlag) removeFlag.value = '0';
+
+              previewLogo(file);
+            }
           });
+
           logoInput.addEventListener('change', e => {
             const file = e.target.files[0];
-            if (file) previewLogo(file);
-          });
-          if (removeLogoBtn) {
-            removeLogoBtn.addEventListener('click', () => {
+            const removeFlag = document.getElementById('remove_logo_flag');
+            if (file) {
+              if (removeFlag) removeFlag.value = '0';
+              previewLogo(file);
+            } else {
+              // user opened the file dialog and pressed Cancel — clear the preview to reflect no file
               logoInput.value = '';
               logoPreview.classList.add('hidden');
               logoPlaceholder.classList.remove('hidden');
+            }
+          });
+
+          if (removeLogoBtn) {
+            removeLogoBtn.addEventListener('click', (e) => {
+              // Prevent the click from bubbling up to dropZone (which would open the file dialog)
+              e.stopPropagation();
+              // Clear the input and preview
+              logoInput.value = '';
+              try { const dt = new DataTransfer(); logoInput.files = dt.files; } catch (err) { }
+              logoPreview.classList.add('hidden');
+              logoPlaceholder.classList.remove('hidden');
+              // Mark that the user removed the image so server-side won't require re-upload
+              const removeFlag = document.getElementById('remove_logo_flag');
+              if (removeFlag) removeFlag.value = '1';
             });
           }
+
           function previewLogo(file) {
             const reader = new FileReader();
             reader.onload = e => {
