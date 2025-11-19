@@ -40,9 +40,10 @@ class UsuarioAdmin(UserAdmin):
             return self.readonly_fields
 
         # Si no es superadmin, no puede modificar el campo 'rol'
-        if not request.user.is_superuser or request.user.rol != 'superadmin':
+        if  request.user.is_superuser or request.user.rol == 'superadmin':
+            return self.readonly_fields
+        else:
             return self.readonly_fields + ('rol', 'is_staff', 'is_superuser')
-        return self.readonly_fields
 
 # ============================
 # CONFIGURACIÓN DEL MODELO HISTORIALCLIENTE
