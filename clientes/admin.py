@@ -40,7 +40,7 @@ class UsuarioAdmin(UserAdmin):
             return self.readonly_fields
 
         # Si no es superadmin, no puede modificar el campo 'rol'
-        if request.user.rol != 'superadmin':
+        if not request.user.is_superuser or request.user.rol != 'superadmin':
             return self.readonly_fields + ('rol', 'is_staff', 'is_superuser')
         return self.readonly_fields
 
